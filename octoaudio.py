@@ -4,7 +4,7 @@ import alsaaudio
 from wavefile import WaveReader
 
 class OctoAudio(threading.Thread):
-    def __init__(self, devicename, buffersize, filepath):
+    def __init__(self, devicename, buffersize, filepath=False):
         super(OctoAudio, self).__init__()
 
         # Set parameters
@@ -28,25 +28,31 @@ class OctoAudio(threading.Thread):
         self.device.setperiodsize(self.periodsize)
 
     def run(self):
-        with WaveReader(self.filepath) as wav:
-            print "Title:", wav.metadata.title
-            print "Artist:", wav.metadata.artist
-            print "Channels:", wav.channels
-            print "Format: 0x%x"%wav.format
-            print "Sample Rate:", wav.samplerate
+        if filepath:
+            with WaveReader(self.filepath) as wav:
+                print "Title:", wav.metadata.title
+                print "Artist:", wav.metadata.artist
+                print "Channels:", wav.channels
+                print "Format: 0x%x"%wav.format
+                print "Sample Rate:", wav.samplerate
 
-            # Set device attributes
-            self.device.setchannels(wav.channels)
-            self.device.setrate(wav.samplerate)
+                # Set device attributes
+                self.device.setchannels(wav.channels)
+                self.device.setrate(wav.samplerate)
 
-            data = wav.buffer(self.periodsize)
-            nframes = wav.read(data)
-            while (nframes) and (self.active):
-                self.device.write(data[:,:nframes])
+                data = wav.buffer(self.periodsize)
                 nframes = wav.read(data)
+                while (nframes) and (self.active):
+                    self.device.write(data[:,:nframes])
+                    nframes = wav.read(data)
 
     def play(self):
         self.start()
 
     def stop(self):
         self.active = False
+
+    def load(filepath):
+        if self.active:
+            self.stop()
+        self.filepath = os.path.abspath(filepath)
