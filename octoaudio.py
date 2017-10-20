@@ -1,4 +1,5 @@
 import os
+import time
 import threading
 import alsaaudio
 from wavefile import WaveReader
@@ -10,7 +11,8 @@ class OctoAudio(threading.Thread):
         # Set parameters
         self.periodsize = buffersize
         self.filepath = os.path.abspath(filepath)
-        self.active = True
+        self.active = False
+        self._destroy = False
 
         # Setup device
         self.__list_cards()
@@ -28,31 +30,39 @@ class OctoAudio(threading.Thread):
         self.device.setperiodsize(self.periodsize)
 
     def run(self):
-        if filepath:
-            with WaveReader(self.filepath) as wav:
-                print "Title:", wav.metadata.title
-                print "Artist:", wav.metadata.artist
-                print "Channels:", wav.channels
-                print "Format: 0x%x"%wav.format
-                print "Sample Rate:", wav.samplerate
+        while self._destroy == False:
+            if (self.active == True) and (self.filepath):
+                with WaveReader(self.filepath) as wav:
+                    print "Title:", wav.metadata.title
+                    print "Artist:", wav.metadata.artist
+                    print "Channels:", wav.channels
+                    print "Format: 0x%x"%wav.format
+                    print "Sample Rate:", wav.samplerate
 
-                # Set device attributes
-                self.device.setchannels(wav.channels)
-                self.device.setrate(wav.samplerate)
+                    # Set device attributes
+                    self.device.setchannels(wav.channels)
+                    self.device.setrate(wav.samplerate)
 
-                data = wav.buffer(self.periodsize)
-                nframes = wav.read(data)
-                while (nframes) and (self.active):
-                    self.device.write(data[:,:nframes])
+                    data = wav.buffer(self.periodsize)
                     nframes = wav.read(data)
+                    while (nframes) and (self.active):
+                        self.device.write(data[:,:nframes])
+                        nframes = wav.read(data)
+                    wav.close()
+                self.active = False
+            time.sleep(0.1)
 
     def play(self):
-        self.start()
+        self.active = True
 
     def stop(self):
         self.active = False
+        time.sleep(0.1)
 
-    def load(filepath):
-        if self.active:
+    def load(self, filepath):
+        if self.active == True:
             self.stop()
         self.filepath = os.path.abspath(filepath)
+
+    def destroy(self):
+        self._destroy = True

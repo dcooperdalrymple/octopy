@@ -17,7 +17,9 @@ def usage():
 
 def handle_midi(note):
 	audio.stop()
-	if note < len(files.getfiles()):
+	if note >= 0 and note < len(files.getfiles()):
+		print "Lets play a file!"
+		print "FILE:" + files.getfiles()[note]
 		audio.load(files.getfiles()[note])
 		audio.play()
 
@@ -29,21 +31,18 @@ if __name__ == '__main__':
 	storagemedia = False
 	midichannel = 1
 
-	opts, args = getopt.getopt(sys.argv[1:], 'dbmlh')
+	opts, args = getopt.getopt(sys.argv[1:], 'dbmlch')
 	for o, a in opts:
 		if o == '-d':
 			device = a
 		elif o == '-b':
-			buffersize = int(a)
+			buffersize = a
 		elif o == '-m':
 			storagemedia = a
 		elif o == '-l':
 			localmedia = a
 		elif o == '-c':
-			if a == "all":
-				midichannel = a
-			else:
-				midichannel = int(a)
+			midichannel = a
 		elif o == '-h':
 			usage()
 
@@ -54,8 +53,11 @@ if __name__ == '__main__':
 		if usb.getpath():
 			files.append(usb.getfiles())
 
+	print files.getfiles()
+
 	# Initialize Audio
 	audio = OctoAudio(device, buffersize, files.getfiles()[2])
+        audio.start()
 
 	# Initialize Midi
 	midi = OctoMidi(midichannel)
@@ -71,5 +73,5 @@ if __name__ == '__main__':
 		print ""
 	finally:
 		print "Exit."
-		audio.stop()
+		audio.destroy()
 		midi.close()

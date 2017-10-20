@@ -16,28 +16,16 @@ class OctoMidiHandler(object):
         message, deltatime = event
         self._wallclock += deltatime
 
-        if event[0] < 0xF0:
-            channel = (event[0] & 0xF) + 1
-            status = event[0] & 0xF0
-        else:
-            status = event[0]
-            channel = None
+        status = event[0][0]
+        note = event[0][1]
+        velocity = event[0][2]
 
-        data1 = data2 = None
-        num_bytes = len(event)
+#        print "Midi Received: [Status:" + str(status) + ", Note:" + str(note) + ", Velocity:" + str(velocity) + "]"
+        self.parse_event(status, note, velocity)
 
-        if num_bytes >= 2:
-            data1 = event[1]
-        if num_bytes >= 3:
-            data2 = event[2]
-
-        print("[%s] @%i CH:%2s %02X %s %s", self.port, self._wallclock, channel or '-', status, data1, data2 or '')
-
-        self.parse_event(status, channel, data1, data2)
-
-    def parse_event(status, channel, data1, data2):
-        if status == NOTE_ON and (self.channel == channel or self.channel == "all") and data2 != 0x00:
-            self.callback(data1)
+    def parse_event(self, status, note, velocity):
+        if status == 153 and velocity > 0:
+            self.callback(note)
 
 class OctoMidi:
     def __init__(self, channel, in_port=False, out_port=False):
@@ -59,9 +47,10 @@ class OctoMidi:
         else:
             self.midiin = rtmidi.MidiIn()
             available_ports = self.midiin.get_ports()
+            print available_ports
             if available_ports:
-                self.midiin.open_port(0)
-                self.in_port = 0
+                self.midiin.open_port(1)
+                self.in_port = 1
             else:
                 self.midiin.open_virtual_port("Octopy Virtual Input")
                 self.in_port = "Octopy Virtual Input"
@@ -76,8 +65,9 @@ class OctoMidi:
         else:
             self.midiout = rtmidi.MidiOut()
             available_ports = self.midiout.get_ports()
+            print available_ports
             if available_ports:
-                self.midiout.open_port(0)
+                self.midiout.open_port(1)
             else:
                 self.midiout.open_virtual_port("Octopy Virtual Output")
 
