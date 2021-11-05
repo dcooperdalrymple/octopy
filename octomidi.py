@@ -111,8 +111,15 @@ class OctoMidi(threading.Thread):
     def play(self):
         self.active = True
 
+    def panic(self):
+        for channel in range(16):
+            self.midiout.send_message([rtmidi.midiconstants.CONTROL_CHANGE, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
+            self.midiout.send_message([rtmidi.midiconstants.CONTROL_CHANGE, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
+            time.sleep(0.05)
+
     def stop(self, delay=True):
         self.active = False
+        self.panic()
         if delay:
             time.sleep(self.settings.get_threaddelay())
 
