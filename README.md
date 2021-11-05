@@ -6,7 +6,7 @@ _By D. Cooper Dalrymple, 2021_
 
 ## Requirements
 
-* Python 3.x
+* Python 3.9+
 * pyalsaaudio
 * python-rtmidi
 * wave
