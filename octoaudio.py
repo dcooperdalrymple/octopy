@@ -2,53 +2,95 @@ import os
 import time
 import threading
 import alsaaudio
-from wavefile import WaveReader
+import wave
 
 class OctoAudio(threading.Thread):
-    def __init__(self, devicename, buffersize, filepath=False):
+    def __init__(self, settings, filepath=False):
         super(OctoAudio, self).__init__()
 
+        self.settings = settings
+
         # Set parameters
-        self.periodsize = buffersize
-        self.filepath = os.path.abspath(filepath)
+        self.periodsize = self.settings.get_buffersize()
+        self.devicename = self.settings.get_device()
+        if filepath != False:
+            self.filepath = os.path.abspath(filepath)
+        else:
+            self.filepath = False
         self.active = False
         self._destroy = False
 
-        # Setup device
-        self.__list_cards()
-        self.__setup_device(devicename)
+        if self.settings.get_verbose():
+            self.__list_cards()
 
     def __list_cards(self):
-        print "Available sound cards:"
+        print("Available Sound Cards:")
         for i in alsaaudio.card_indexes():
             (name, longname) = alsaaudio.card_name(i)
-            print("  %d: %s (%s)" % (i, name, longname))
+            print("  {:d}: {} ({})".format(i, name, longname))
 
-    def __setup_device(self, devicename):
-        self.device = alsaaudio.PCM(device=devicename)
-        self.device.setformat(alsaaudio.PCM_FORMAT_FLOAT_LE)
-        self.device.setperiodsize(self.periodsize)
+        print("Available Devices:")
+        devs = alsaaudio.pcms()
+        for i in range(len(devs)):
+            print("  {:d}: {}".format(i, devs[i]))
+        print()
+
+    def __setup_device(self, channels, framerate, format):
+        try:
+            device = alsaaudio.PCM(
+                type=alsaaudio.PCM_PLAYBACK,
+                mode=alsaaudio.PCM_NORMAL,
+                device=self.devicename,
+                periodsize=self.periodsize,
+                channels=channels,
+                rate=framerate,
+                format=format
+            )
+        except (alsaaudio.ALSAAudioError):
+            if self.settings.get_verbose():
+                print("Unable to initialize sound card.")
+            return False
+
+        if self.settings.get_verbose():
+            print("Selected Sound Card: {}\n".format(device.cardname()))
+
+        return device
 
     def run(self):
         while self._destroy == False:
-            if (self.active == True) and (self.filepath):
-                with WaveReader(self.filepath) as wav:
-                    print "Title:", wav.metadata.title
-                    print "Artist:", wav.metadata.artist
-                    print "Channels:", wav.channels
-                    print "Format: 0x%x"%wav.format
-                    print "Sample Rate:", wav.samplerate
+            if self.active == True and self.filepath:
 
-                    # Set device attributes
-                    self.device.setchannels(wav.channels)
-                    self.device.setrate(wav.samplerate)
+                with wave.open(self.filepath, 'rb') as wav:
+                    format = None
+                    if wav.getsampwidth() == 1:
+                        format = alsaaudio.PCM_FORMAT_U8
+                    elif wav.getsampwidth() == 2:
+                        format = alsaaudio.PCM_FORMAT_S16_LE
+                    elif wav.getsampwidth() == 3:
+                        format = alsaaudio.PCM_FORMAT_S24_3LE
+                    elif wav.getsampwidth() == 4:
+                        format = alsaaudio.PCM_FORMAT_S32_LE
+                    else:
+                        if self.settings.get_verbose():
+                            print('Unsupported wave file format: {}'.format(wav.getsampwidth()))
+                        self.active = False
+                        break
 
-                    data = wav.buffer(self.periodsize)
-                    nframes = wav.read(data)
-                    while (nframes) and (self.active):
-                        self.device.write(data[:,:nframes])
-                        nframes = wav.read(data)
+                    if self.settings.get_verbose():
+                        print("Channels: {:d}".format(wav.getnchannels()))
+                        print("Sample Rate: {:d}".format(wav.getframerate()))
+                        print("Format: {}".format(format))
+                        print("Buffer Size: {}".format(self.periodsize))
+
+                    device = self.__setup_device(wav.getnchannels(), wav.getframerate(), format)
+
+                    data = wav.readframes(self.periodsize)
+                    while data and self.active:
+                        device.write(data)
+                        data = wav.readframes(self.periodsize)
                     wav.close()
+                    print("Finished wav file")
+
                 self.active = False
             time.sleep(0.1)
 
