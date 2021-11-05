@@ -5,7 +5,7 @@ import alsaaudio
 import wave
 
 class OctoAudio(threading.Thread):
-    def __init__(self, settings, filepath=False):
+    def __init__(self, settings):
         super(OctoAudio, self).__init__()
 
         self.settings = settings
@@ -13,10 +13,8 @@ class OctoAudio(threading.Thread):
         # Set parameters
         self.periodsize = self.settings.get_buffersize()
         self.devicename = self.settings.get_device()
-        if filepath != False:
-            self.filepath = os.path.abspath(filepath)
-        else:
-            self.filepath = False
+
+        self.filepath = False
         self.active = False
         self._destroy = False
 
@@ -77,29 +75,33 @@ class OctoAudio(threading.Thread):
                         break
 
                     if self.settings.get_verbose():
-                        print("Channels: {:d}".format(wav.getnchannels()))
-                        print("Sample Rate: {:d}".format(wav.getframerate()))
-                        print("Format: {}".format(format))
-                        print("Buffer Size: {}".format(self.periodsize))
+                        print("Wave File Parameters:")
+                        print("  Channels = {:d}".format(wav.getnchannels()))
+                        print("  Sample Rate = {:d}".format(wav.getframerate()))
+                        print("  Format = {}".format(format))
+                        print("  Buffer Size = {}".format(self.periodsize))
 
                     device = self.__setup_device(wav.getnchannels(), wav.getframerate(), format)
 
                     data = wav.readframes(self.periodsize)
-                    while data and self.active:
+                    while data and self.active and not self._destroy:
                         device.write(data)
                         data = wav.readframes(self.periodsize)
                     wav.close()
-                    print("Finished wav file")
+
+                    if self.settings.get_verbose():
+                        print("Wave file writing complete.")
 
                 self.active = False
-            time.sleep(0.1)
+            time.sleep(self.settings.get_threaddelay())
 
     def play(self):
         self.active = True
 
-    def stop(self):
+    def stop(self, delay=True):
         self.active = False
-        time.sleep(0.1)
+        if delay:
+            time.sleep(self.settings.get_threaddelay())
 
     def load(self, filepath):
         if self.active == True:
@@ -108,3 +110,6 @@ class OctoAudio(threading.Thread):
 
     def destroy(self):
         self._destroy = True
+
+    def close(self):
+        self.destroy()

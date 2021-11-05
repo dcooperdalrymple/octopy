@@ -1,8 +1,13 @@
+import os
 import time
+import threading
+
 import rtmidi
 from rtmidi.midiutil import open_midiinput
 from rtmidi.midiutil import open_midioutput
 from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE)
+
+from mido import MidiFile
 
 class OctoMidiHandler(object):
     def __init__(self, port, channel, callback, verbose=False):
@@ -29,13 +34,20 @@ class OctoMidiHandler(object):
         if status & 0xf0 == NOTE_ON and (self.channel <= 0 or status & 0x0f == self.channel) and velocity > 0:
             self.callback(note)
 
-class OctoMidi:
+class OctoMidi(threading.Thread):
     def __init__(self, settings):
+        super(OctoMidi, self).__init__()
+
         self.settings = settings
+
         self.inchannel = self.settings.get_midiinchannel()
         self.outchannel = self.settings.get_midioutchannel()
         self.in_port = self.settings.get_midiindevice()
         self.out_port = self.settings.get_midioutdevice()
+
+        self.midifilepath = False
+        self.active = False
+        self._destroy = False
 
     def set_callback(self, callback):
         self.callback = callback
@@ -74,7 +86,47 @@ class OctoMidi:
         # Register MidiIn Callback
         self.midiin.set_callback(OctoMidiHandler(self.in_port, self.inchannel, self.callback, self.settings.get_verbose()))
 
+    def run(self):
+        while self._destroy == False:
+            if self.active == True and self.midifilepath:
+
+                mid = MidiFile(self.midifilepath)
+                if self.settings.get_verbose():
+                    print("Midi File Parameters")
+                    print("  Type = {:d}".format(mid.type))
+                    print("  Length = {:2f}s".format(mid.length))
+                    print("  Tracks = {:d}".format(len(mid.tracks)))
+                    print("  Ticks Per Beat = {:d}".format(mid.ticks_per_beat))
+
+                for msg in mid.play():
+                    if not self.active or self._destroy:
+                        break
+                    if self.outchannel > 0:
+                        msg.channel = self.outchannel
+                    self.midiout.send_message(msg.bytes())
+
+                self.active = False
+            time.sleep(self.settings.get_threaddelay())
+
+    def play(self):
+        self.active = True
+
+    def stop(self, delay=True):
+        self.active = False
+        if delay:
+            time.sleep(self.settings.get_threaddelay())
+
+    def load(self, path):
+        if self.active == True:
+            self.stop()
+        self.midifilepath = os.path.abspath(path)
+
+    def destroy(self):
+        self._destroy = True
+
     def close(self):
+        self.destroy()
+
         self.midiin.close_port()
         del self.midiin
 

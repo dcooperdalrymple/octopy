@@ -24,6 +24,7 @@ try:
 	from rtmidi.midiutil import open_midiinput
 	from rtmidi.midiutil import open_midioutput
 	from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE)
+	from mido import MidiFile
 except ImportError as err:
 	print("Could not load {} module.".format(err))
 	raise SystemExit
@@ -36,11 +37,21 @@ from octoaudio import OctoAudio
 
 def handle_midi(note):
 	audio.stop()
-	if note >= 0 and note < len(files.getfiles()):
+	midi.stop()
+	if note > 0 and note =< len(files.getfiles()):
+		file = files.getfiles()[note-1]
 		if settings.get_verbose():
-			print("File Selected: " + files.getfiles()[note].get_description())
-		audio.load(files.getfiles()[note].path)
+			print("File Selected: " + file.get_description())
+
+		audio.load(file.path)
 		audio.play()
+
+		if file.has_midi():
+			midi.load(file.midipath)
+			midi.play()
+	elif note == 0:
+		audio.stop(False)
+		midi.stop(False)
 
 if __name__ == '__main__':
 
@@ -76,6 +87,7 @@ if __name__ == '__main__':
 	midi = OctoMidi(settings)
 	midi.set_callback(handle_midi)
 	midi.open()
+	midi.start()
 
 	# Wait for keyboard interrupt
 	if settings.get_verbose():
@@ -87,5 +99,5 @@ if __name__ == '__main__':
 		print()
 	finally:
 		print("Exit.")
-		audio.destroy()
+		audio.close()
 		midi.close()

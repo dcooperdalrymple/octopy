@@ -2,7 +2,7 @@ from argparse import Namespace
 
 class OctoSettings:
     def __init__(self):
-        self.set(OctoSettings.get_defaults())
+        self.data = OctoSettings.get_defaults()
 
     def set(self, settings):
         if type(settings) is Namespace:
@@ -10,36 +10,20 @@ class OctoSettings:
         if not type(settings) is dict:
             return
 
-        if 'verbose' in settings:
-            self.set_verbose(settings['verbose'])
-        if 'device' in settings:
-            self.set_device(settings['device'])
-        if 'buffersize' in settings:
-            self.set_buffersize(settings['buffersize'])
-        if 'localmedia' in settings:
-    	    self.set_localmedia(settings['localmedia'])
-        if 'storagemedia' in settings:
-            self.set_storagemedia(settings['storagemedia'])
-        if 'midiindevice' in settings:
-            self.set_midiindevice(settings['midiindevice'])
-        if 'midiinchannel' in settings:
-            self.set_midiinchannel(settings['midiinchannel'])
-        if 'midioutdevice' in settings:
-            self.set_midioutdevice(settings['midioutdevice'])
-        if 'midioutchannel' in settings:
-            self.set_midioutchannel(settings['midioutchannel'])
+        self.data = self.data.copy().update(settings)
 
     def get_defaults():
         return {
             'verbose': False,
             'device': 'default',
-            'buffersize': 512,
+            'buffersize': 256,
             'localmedia': './media',
             'storagemedia': False,
             'midiindevice': 1,
             'midiinchannel': 0,
             'midioutdevice': 1,
             'midioutchannel': 0,
+            'threaddelay': 0.05,
         }
     def get_default(key):
         settings = OctoSettings.get_defaults()
@@ -48,50 +32,33 @@ class OctoSettings:
         return False
 
     def get_verbose(self):
-        return self.verbose
-    def set_verbose(self, value):
-        self.verbose = value
+        return self.data.verbose
 
     def get_device(self):
-        return self.device
-    def set_device(self, value):
-        self.device = value
-
+        return self.data.device
     def get_buffersize(self):
-        return self.buffersize
-    def set_buffersize(self, value):
-        self.buffersize = value
-
+        return self.data.buffersize
     def get_localmedia(self):
-        return self.localmedia
-    def set_localmedia(self, value):
-        self.localmedia = value
-
+        return self.data.localmedia
     def get_storagemedia(self):
-        return self.storagemedia
-    def set_storagemedia(self, value):
-        self.storagemedia = value
+        return self.data.storagemedia
 
     def get_midiindevice(self):
-        return self.midiindevice
-    def set_midiindevice(self, value):
-        self.midiindevice = value
+        return self.data.midiindevice
+    def get_midioutdevice(self):
+        return self.data.midioutdevice
 
     def get_midiinchannel(self):
-        return self.midiinchannel
+        return self.data.midiinchannel
     def set_midiinchannel(self, value):
-        self.midiinchannel = value
-
-    def get_midioutdevice(self):
-        return self.midioutdevice
-    def set_midioutdevice(self, value):
-        self.midioutdevice = value
-
+        self.data.midiinchannel = value
     def get_midioutchannel(self):
-        return self.midioutchannel
+        return self.data.midioutchannel
     def set_midioutchannel(self, value):
-        self.midioutchannel = value
-
+        self.data.midioutchannel = value
     def set_midichannels(self, input, output):
         self.set_midiinchannel(input)
         self.set_midioutchannel(output)
+
+    def get_threaddelay(self):
+        return self.data.threaddelay

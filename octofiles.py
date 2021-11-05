@@ -22,6 +22,9 @@ class OctoFile:
 		desc += " (found in '{}')".format(self.dir)
 		return desc
 
+	def has_midi(self):
+		return self.midipath != False
+
 class OctoFiles:
 	def __init__(self, dirpath):
 		self.path = dirpath
@@ -56,7 +59,7 @@ class OctoFiles:
 
 		print("Available Song Files:")
 		for i in range(len(self.files)):
-			print("  {:d}: {}".format(i, self.files[i].get_description()))
+			print("  {:d}: {}".format(i+1, self.files[i].get_description()))
 		print()
 
 class OctoUsb:
