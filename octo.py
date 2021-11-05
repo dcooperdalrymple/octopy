@@ -38,13 +38,17 @@ from octoaudio import OctoAudio
 def handle_midi(note):
 	audio.stop()
 	midi.stop()
-	if note > 0 and note =< len(files.getfiles()):
+	if note > 0 and note <= len(files.getfiles()):
 		file = files.getfiles()[note-1]
 		if settings.get_verbose():
 			print("File Selected: " + file.get_description())
 
-		audio.load(file.path)
-		audio.play()
+		audio.stop()
+		midi.stop()
+
+		if file.has_wave():
+			audio.load(file.wavepath)
+			audio.play()
 
 		if file.has_midi():
 			midi.load(file.midipath)

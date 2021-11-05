@@ -3,11 +3,16 @@ import subprocess
 
 class OctoFile:
 	def __init__(self, path):
-		self.path = path
-		self.dir = os.path.dirname(self.path)
-		self.filename = os.path.basename(self.path)
-		self.name = os.path.splitext(self.filename)[0]
+		self.dir = os.path.dirname(path)
+		self.name = os.path.splitext(os.path.basename(path))[0]
+		self.wavepath = self.find_wave()
 		self.midipath = self.find_midi()
+
+	def find_wave(self):
+		path = os.path.join(self.dir, self.name + '.wav')
+		if os.path.isfile(path):
+			return path
+		return False
 
 	def find_midi(self):
 		path = os.path.join(self.dir, self.name + '.mid')
@@ -15,12 +20,21 @@ class OctoFile:
 			return path
 		return False
 
+	def get_type(self):
+		if self.has_wave() and self.has_midi():
+			return "WAV+MID"
+		elif self.has_wave():
+			return "WAV"
+		elif self.has_midi():
+			return "MID"
+		else:
+			return "NONE"
+
 	def get_description(self):
-		desc = "{} WAV".format(self.name)
-		if self.midipath:
-			desc += "+MID"
-		desc += " (found in '{}')".format(self.dir)
-		return desc
+		return "{} {} (found in '{}')".format(self.name, self.get_type(), self.dir)
+
+	def has_wave(self):
+		return self.wavepath != False
 
 	def has_midi(self):
 		return self.midipath != False
@@ -32,8 +46,12 @@ class OctoFiles:
 		self.__locate_files()
 
 	def __add_file(self, path):
-		if path.endswith(".wav"):
-			self.files.append(OctoFile(path))
+		if path.endswith(".wav") or path.endswith(".mid"):
+			file = OctoFile(path)
+			for f in self.files:
+				if f.name == file.name:
+					return
+			self.files.append(file)
 
 	def __locate_files(self):
 		for (dirpath, dirnames, filenames) in os.walk(self.path):
@@ -92,7 +110,7 @@ class OctoUsb:
 	def __list_files(self):
 		for (dirpath, dirnames, filenames) in os.walk(self.mount):
 			for x in filenames:
-				if x.endswith(".wav"):
+				if x.endswith(".wav") or x.endswith(".mid"):
 					self.files.append(os.path.join(dirpath, x))
 			break
 		return True
