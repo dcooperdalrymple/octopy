@@ -83,7 +83,7 @@ class OctoFiles:
 class OctoUsb:
 	def __init__(self, storagemedia):
 		self.media = storagemedia
-		self.mount = "~/thumb"
+		self.mount = "/media/thumb"
 		self.files = []
 		self.found = self.__check_media()
 		if self.found:
@@ -94,7 +94,7 @@ class OctoUsb:
 		output = subprocess.Popen("lsblk -o name -n -s -l", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 		for out in output.stdout:
-			if self.media in out:
+			if self.media in str(out):
 				return True
 
 		return False

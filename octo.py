@@ -76,7 +76,7 @@ if __name__ == '__main__':
 	# Initialize and build file list (local and storage)
 	files = OctoFiles(settings.get_localmedia())
 	if settings.get_storagemedia():
-		usb = OctoUsb(storagemedia)
+		usb = OctoUsb(settings.get_storagemedia())
 		if usb.getpath():
 			files.append(usb.getfiles())
 
