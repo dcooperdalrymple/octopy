@@ -10,7 +10,9 @@ class OctoSettings:
         if not type(settings) is dict:
             return
 
-        self.data = self.data | settings # This operation is what forces the Python 3.9+ requirement
+        for key, value in settings.items():
+            if key in self.data:
+                self.data[key] = value
 
     def get_defaults():
         return {
