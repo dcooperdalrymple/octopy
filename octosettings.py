@@ -1,8 +1,15 @@
+import os
 from argparse import Namespace
+import configparser
 
 class OctoSettings:
+    localconfig = 'config.ini'
+    userconfig = '~/octopy.ini'
+
     def __init__(self):
-        self.data = OctoSettings.get_defaults()
+        self.data = self.get_defaults()
+        if os.path.exists(self.userconfig):
+            self.set(self.parse_config(self.userconfig))
 
     def set(self, settings):
         if type(settings) is Namespace:
@@ -11,24 +18,25 @@ class OctoSettings:
             return
 
         for key, value in settings.items():
-            if key in self.data:
+            if key in self.data and self.data[key] != self.get_defaults()[key]:
                 self.data[key] = value
 
-    def get_defaults():
-        return {
-            'verbose': False,
-            'device': 'default',
-            'buffersize': 256,
-            'localmedia': './media',
-            'storagemedia': False,
-            'midiindevice': 1,
-            'midiinchannel': 0,
-            'midioutdevice': 1,
-            'midioutchannel': 0,
-            'threaddelay': 0.05,
-        }
-    def get_default(key):
-        settings = OctoSettings.get_defaults()
+    def get(self, key=''):
+        if key != '':
+            if key in self.data:
+                return self.data[key]
+            else:
+                return False
+        return self.data
+
+    def get_defaults(self):
+        if hasattr(self, 'defaults') and type(self.defaults) is dict:
+            return self.defaults
+        self.defaults = self.parse_config(self.localconfig)
+        return self.defaults
+
+    def get_default(self, key):
+        settings = self.get_defaults()
         if settings[key]:
             return settings[key]
         return False
@@ -36,8 +44,8 @@ class OctoSettings:
     def get_verbose(self):
         return self.data['verbose']
 
-    def get_device(self):
-        return self.data['device']
+    def get_audiodevice(self):
+        return self.data['audiodevice']
     def get_buffersize(self):
         return self.data['buffersize']
     def get_localmedia(self):
@@ -64,3 +72,39 @@ class OctoSettings:
 
     def get_threaddelay(self):
         return self.data['threaddelay']
+
+    def parse_config(self, path):
+        data = {}
+
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        if 'Application' in config:
+            if 'Verbose' in config['Application']:
+                data['verbose'] = config['Application'].getboolean('Verbose')
+            if 'ThreadDelay' in config['Application']:
+                data['threaddelay'] = config['Application'].getfloat('ThreadDelay')
+
+        if 'Media' in config:
+            if 'Local' in config['Media']:
+                data['localmedia'] = config['Media']['Local']
+            if 'Storage' in config['Media']:
+                data['storagemedia'] = config['Media']['Storage']
+
+        if 'Audio' in config:
+            if 'Device' in config['Audio']:
+                data['audiodevice'] = config['Audio']['Device']
+            if 'BufferSize' in config['Audio']:
+                data['buffersize'] = config['Audio'].getint('BufferSize')
+
+        if 'Midi' in config:
+            if 'InDevice' in config['Midi']:
+                data['midiindevice'] = config['Midi']['InDevice']
+            if 'InChannel' in config['Midi']:
+                data['midiinchannel'] = config['Midi'].getint('InChannel')
+            if 'OutDevice' in config['Midi']:
+                data['midioutdevice'] = config['Midi']['OutDevice']
+            if 'OutChannel' in config['Midi']:
+                data['midioutchannel'] = config['Midi'].getint('OutChannel')
+
+        return data

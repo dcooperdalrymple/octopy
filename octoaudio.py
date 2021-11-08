@@ -12,7 +12,7 @@ class OctoAudio(threading.Thread):
 
         # Set parameters
         self.periodsize = self.settings.get_buffersize()
-        self.devicename = self.settings.get_device()
+        self.devicename = self.settings.get_audiodevice()
 
         self.filepath = False
         self.active = False

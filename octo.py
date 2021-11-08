@@ -15,6 +15,7 @@ try:
 
 	# Libraries included in other files
 	import os
+	import configparser
 	import subprocess
 	import threading
 	import alsaaudio
@@ -59,18 +60,19 @@ def handle_midi(note):
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser(description="Octopy")
-	parser.add_argument('-v', '--verbose', action='store_true', default=OctoSettings.get_default('verbose'))
-	parser.add_argument('-d', '--device', type=str, default=OctoSettings.get_default('device'), metavar='Audio Device Index')
-	parser.add_argument('-b', '--buffersize', type=int, default=OctoSettings.get_default('buffersize'), metavar='Buffer Size')
-	parser.add_argument('-l', '--localmedia', type=str, default=OctoSettings.get_default('localmedia'), metavar='Relative Media Directory')
-	parser.add_argument('-m', '--storagemedia', type=str, default=OctoSettings.get_default('storagemedia'), metavar='External Storage Media Directory')
-	parser.add_argument('-id', '--midiindevice', type=int, default=OctoSettings.get_default('midiindevice'), metavar='Midi Input Device')
-	parser.add_argument('-ic', '--midiinchannel', type=int, default=OctoSettings.get_default('midiinchannel'), metavar='Midi Input Channel Filter', help='Used for selecting song playback')
-	parser.add_argument('-od', '--midioutdevice', type=int, default=OctoSettings.get_default('midioutdevice'), metavar='Midi Output Device')
-	parser.add_argument('-oc', '--midioutchannel', type=int, default=OctoSettings.get_default('midioutchannel'), metavar='Midi Output Channel', help='When > 0, force a midi channel. Otherwise, use original midi message channels.')
-
 	settings = OctoSettings()
+
+	parser = argparse.ArgumentParser(description="Octopy")
+	parser.add_argument('-v', '--verbose', action='store_true', default=settings.get_default('verbose'))
+	parser.add_argument('-d', '--device', type=str, default=settings.get_default('audiodevice'), metavar='Audio Device Index')
+	parser.add_argument('-b', '--buffersize', type=int, default=settings.get_default('buffersize'), metavar='Buffer Size')
+	parser.add_argument('-l', '--localmedia', type=str, default=settings.get_default('localmedia'), metavar='Relative Media Directory')
+	parser.add_argument('-m', '--storagemedia', type=str, default=settings.get_default('storagemedia'), metavar='External Storage Media Directory')
+	parser.add_argument('-id', '--midiindevice', type=str, default=settings.get_default('midiindevice'), metavar='Midi Input Device')
+	parser.add_argument('-ic', '--midiinchannel', type=int, default=settings.get_default('midiinchannel'), metavar='Midi Input Channel Filter', help='Used for selecting song playback')
+	parser.add_argument('-od', '--midioutdevice', type=str, default=settings.get_default('midioutdevice'), metavar='Midi Output Device')
+	parser.add_argument('-oc', '--midioutchannel', type=int, default=settings.get_default('midioutchannel'), metavar='Midi Output Channel', help='When > 0, force a midi channel. Otherwise, use original midi message channels.')
+
 	settings.set(parser.parse_args())
 
 	# Initialize and build file list (local and storage)
