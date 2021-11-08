@@ -36,10 +36,10 @@ from octofiles import OctoUsb
 from octomidi import OctoMidi
 from octoaudio import OctoAudio
 
+from getch import _Getch
+
 def handle_midi(note):
-	audio.stop()
-	midi.stop()
-	if note > 0 and note <= len(files.getfiles()):
+	if note > 0 and files.getfiles() and note <= len(files.getfiles()):
 		file = files.getfiles()[note-1]
 		if settings.get_verbose():
 			print("File Selected: " + file.get_description())
@@ -50,13 +50,17 @@ def handle_midi(note):
 		if file.has_wave():
 			audio.load(file.wavepath)
 			audio.play()
+			print("Beginning audio playback.")
 
 		if file.has_midi():
 			midi.load(file.midipath)
 			midi.play()
+			print("Beginning midi playback.")
 	elif note == 0:
 		audio.stop(False)
 		midi.stop(False)
+		if settings.get_verbose():
+			print('Audio and midi halted.')
 
 if __name__ == '__main__':
 
@@ -97,10 +101,15 @@ if __name__ == '__main__':
 
 	# Wait for keyboard interrupt
 	if settings.get_verbose():
-		print("Entering main loop. Press Control-C to exit.")
+		print("Entering main loop. Press 1-9 to play file. Press 0 to stop. Press Q or Control-C to exit.")
 	try:
+		getch = _Getch()
 		while True:
-			time.sleep(1)
+			ch = getch()
+			if ch.isnumeric():
+				handle_midi(int(ch))
+			elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
+				break
 	except KeyboardInterrupt:
 		print()
 	finally:
