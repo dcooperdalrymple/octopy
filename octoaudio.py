@@ -27,11 +27,12 @@ class OctoAudio(threading.Thread):
             (name, longname) = alsaaudio.card_name(i)
             print("  {:d}: {} ({})".format(i, name, longname))
 
-        print("Available Devices:")
+        print("Available Audio Devices:")
         devs = alsaaudio.pcms()
         for i in range(len(devs)):
             print("  {:d}: {}".format(i, devs[i]))
-        print()
+
+        print("Desired Audio Device: {}\n".format(self.devicename))
 
     def __setup_device(self, channels, framerate, format):
         try:
@@ -81,16 +82,15 @@ class OctoAudio(threading.Thread):
                         print("  Format = {}".format(format))
                         print("  Buffer Size = {}".format(self.periodsize))
 
-                    device = self.__setup_device(wav.getnchannels(), wav.getframerate(), format)
-
-                    data = wav.readframes(self.periodsize)
-                    while data and self.active and not self._destroy:
-                        device.write(data)
+                    with self.__setup_device(wav.getnchannels(), wav.getframerate(), format) as device:
                         data = wav.readframes(self.periodsize)
-                    wav.close()
+                        while data and self.active and not self._destroy:
+                            device.write(data)
+                            data = wav.readframes(self.periodsize)
 
+                    wav.close()
                     if self.settings.get_verbose():
-                        print("Wave file writing complete.")
+                        print("Wave file reading complete.")
 
                 self.active = False
             time.sleep(self.settings.get_threaddelay())
