@@ -81,9 +81,9 @@ class OctoFiles:
 		print()
 
 class OctoUsb:
-	def __init__(self, storagemedia):
-		self.media = storagemedia
-		self.mount = "/media/thumb"
+	def __init__(self, settings):
+		self.media = settings.get_storagemedia()
+		self.mount = settings.get_storagemount()
 		self.files = []
 		self.found = self.__check_media()
 		if self.found:

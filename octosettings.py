@@ -52,6 +52,8 @@ class OctoSettings:
         return self.data['localmedia']
     def get_storagemedia(self):
         return self.data['storagemedia']
+    def get_storagemount(self):
+        return self.data['storagemount']
 
     def get_midiindevice(self):
         return self.data['midiindevice']
@@ -90,6 +92,8 @@ class OctoSettings:
                 data['localmedia'] = config['Media']['Local']
             if 'Storage' in config['Media']:
                 data['storagemedia'] = config['Media']['Storage']
+            if 'Mount' in config['Media']:
+                data['storagemount'] = config['Media']['Mount']
 
         if 'Audio' in config:
             if 'Device' in config['Audio']:
