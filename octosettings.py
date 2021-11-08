@@ -71,6 +71,9 @@ class OctoSettings:
         self.set_midiinchannel(input)
         self.set_midioutchannel(output)
 
+    def get_serialport(self):
+        return self.data['serialport']
+
     def get_threaddelay(self):
         return self.data['threaddelay']
 
@@ -111,5 +114,7 @@ class OctoSettings:
                 data['midioutdevice'] = config['Midi']['OutDevice']
             if 'OutChannel' in config['Midi']:
                 data['midioutchannel'] = config['Midi'].getint('OutChannel')
+            if 'SerialPort' in config['Midi']:
+                data['serialport'] = config['Midi']['SerialPort']
 
         return data
