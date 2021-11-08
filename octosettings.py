@@ -8,8 +8,7 @@ class OctoSettings:
 
     def __init__(self):
         self.data = self.get_defaults()
-        if os.path.exists(self.userconfig):
-            self.set(self.parse_config(self.userconfig))
+        self.set(self.parse_config(self.userconfig))
 
     def set(self, settings):
         if type(settings) is Namespace:
@@ -18,7 +17,7 @@ class OctoSettings:
             return
 
         for key, value in settings.items():
-            if key in self.data and self.data[key] != self.get_defaults()[key]:
+            if key in self.data and settings[key] != self.get_defaults()[key]:
                 self.data[key] = value
 
     def get(self, key=''):
@@ -32,7 +31,7 @@ class OctoSettings:
     def get_defaults(self):
         if hasattr(self, 'defaults') and type(self.defaults) is dict:
             return self.defaults
-        self.defaults = self.parse_config(self.localconfig)
+        self.defaults = self.parse_config(os.path.dirname(os.path.realpath(__file__)) + '/' + self.localconfig)
         return self.defaults
 
     def get_default(self, key):
@@ -77,9 +76,11 @@ class OctoSettings:
 
     def parse_config(self, path):
         data = {}
+        if not os.path.exists(path):
+            return data
 
         config = configparser.ConfigParser()
-        config.read('config.ini')
+        config.read(path)
 
         if 'Application' in config:
             if 'Verbose' in config['Application']:
