@@ -8,7 +8,7 @@ class OctoSettings:
 
     def __init__(self):
         self.data = self.get_defaults()
-        self.set(self.parse_config(self.userconfig))
+        self.set(self.parse_config(os.path.expanduser(self.userconfig)))
 
     def set(self, settings):
         if type(settings) is Namespace:
@@ -80,6 +80,8 @@ class OctoSettings:
     def parse_config(self, path):
         data = {}
         if not os.path.exists(path):
+            if self.get_verbose():
+                print("Could not locate config file at {}.".format(path))
             return data
 
         config = configparser.ConfigParser()
