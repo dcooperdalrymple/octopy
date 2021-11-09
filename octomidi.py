@@ -146,7 +146,7 @@ class OctoMidi(threading.Thread):
                     if self.outchannel > 0:
                         msg.channel = self.outchannel
 
-                    if self.out_port == 'gpio':
+                    if self.out_port != 'gpio':
                         self.midiout.send_message(msg.bytes())
                     elif self.serial:
                         self.serial.write(msg.bytes())
@@ -207,9 +207,15 @@ class OctoMidi(threading.Thread):
 
     def panic(self):
         for channel in range(16):
-            self.midiout.send_message([rtmidi.midiconstants.CONTROL_CHANGE, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
-            self.midiout.send_message([rtmidi.midiconstants.CONTROL_CHANGE, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
-            time.sleep(0.05)
+            status = rtmidi.midiconstants.CONTROL_CHANGE | (channel & 0x0f)
+            if self.out_port != 'gpio':
+                self.midiout.send_message([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
+                self.midiout.send_message([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
+            elif self.serial:
+                self.serial.write(bytes([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0]))
+                self.serial.write(bytes([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0]))
+                self.serial.flush()
+            time.sleep(self.settings.get_threaddelay())
 
     def stop(self, delay=True):
         self.active = False

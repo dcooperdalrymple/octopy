@@ -5,7 +5,7 @@
 # Description: Multi-channel midi-activated audio player with synchronized midi output on the Raspberry Pi platform
 # Author: D Cooper Dalrymple (https://dcdalrymple.com/)
 # Created: 2017-10-19
-# Updated: 2021-11-05
+# Updated: 2021-11-09
 
 try:
 	import sys
