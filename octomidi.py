@@ -39,10 +39,8 @@ class OctoMidiHandler(object):
         if status & 0xf0 == NOTE_ON and (self.channel <= 0 or status & 0x0f == self.channel) and velocity > 0:
             self.callback(note)
 
-class OctoMidi(threading.Thread):
+class OctoMidi():
     def __init__(self, settings):
-        super(OctoMidi, self).__init__()
-
         self.settings = settings
 
         self.inchannel = self.settings.get_midiinchannel()
@@ -51,7 +49,12 @@ class OctoMidi(threading.Thread):
         self.out_port = self.settings.get_midioutdevice()
 
         self.midifilepath = False
-        self.active = False
+        self.midifile = False
+        self.midimsgs = False
+        self.midiindex = 0
+        self.miditime = 0
+
+        self._watching = False
         self._destroy = False
 
     def set_callback(self, callback):
@@ -127,39 +130,12 @@ class OctoMidi(threading.Thread):
             self.watcher_thread = threading.Thread(target=self.watcher)
             self.watcher_thread.start()
 
-    def run(self):
-        while self._destroy == False:
-            if self.active == True and self.midifilepath:
-
-                mid = MidiFile(self.midifilepath)
-                if self.settings.get_verbose():
-                    print("Midi File Parameters")
-                    print("  Type = {:d}".format(mid.type))
-                    print("  Length = {:2f}s".format(mid.length))
-                    print("  Tracks = {:d}".format(len(mid.tracks)))
-                    print("  Ticks Per Beat = {:d}".format(mid.ticks_per_beat))
-
-                for msg in mid.play():
-                    if not self.active or self._destroy:
-                        break
-
-                    if self.outchannel > 0:
-                        msg.channel = self.outchannel
-
-                    if self.out_port != 'gpio':
-                        self.midiout.send_message(msg.bytes())
-                    elif self.serial:
-                        self.serial.write(msg.bytes())
-                        self.serial.flush()
-
-                self.active = False
-            time.sleep(self.settings.get_threaddelay())
-
     def watcher(self):
         message = []
         status = 0
         deltatime = time.time()
-        while self._destroy == False:
+        self._watching = True
+        while self._destroy == False and self.serial:
             data = self.serial.read()
             if data:
                 for elem in data:
@@ -179,6 +155,7 @@ class OctoMidi(threading.Thread):
                     self.handler(event)
                     message = []
                     deltatime = time.time()
+        self._watching = False
 
     def get_midi_length(self, message):
         if len(message) == 0:
@@ -202,34 +179,112 @@ class OctoMidi(threading.Thread):
 
         return 255
 
-    def play(self):
-        self.active = True
+    def send_message(self, data):
+        if not isinstance(data, bytes):
+            data = bytes(data)
+        if self.out_port != 'gpio' and self.midiout:
+            self.midiout.send_message(data)
+        elif self.serial:
+            self.serial.write(data)
+            self.serial.flush()
+        else:
+            return False
+        return True
 
     def panic(self):
         for channel in range(16):
             status = rtmidi.midiconstants.CONTROL_CHANGE | (channel & 0x0f)
-            if self.out_port != 'gpio':
-                self.midiout.send_message([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
-                self.midiout.send_message([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
-            elif self.serial:
-                self.serial.write(bytes([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0]))
-                self.serial.write(bytes([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0]))
-                self.serial.flush()
-            time.sleep(self.settings.get_threaddelay())
+            self.send_message([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
+            self.send_message([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
+            #time.sleep(self.settings.get_threaddelay())
 
-    def stop(self, delay=True):
-        self.active = False
+    def stop(self):
         self.panic()
-        if delay:
-            time.sleep(self.settings.get_threaddelay())
+        self.midifilepath = False
+        self.midifile = False
+        self.midimsgs = False
 
     def load(self, path):
-        if self.active == True:
-            self.stop()
+        self.stop()
+
         self.midifilepath = os.path.abspath(path)
+        try:
+            self.midifile = MidiFile(self.midifilepath)
+        except Exception:
+            if self.settings.get_verbose():
+                print('Unable to open midi file: {}.'.format(self.midifilepath))
+            self.midifilepath = False
+            self.midifile = False
+            self.midimsgs = False
+            return False
+
+        self.midimsgs = []
+        for msg in self.midifile:
+            self.midimsgs.append(msg)
+
+        if self.settings.get_verbose():
+            print("Midi File Parameters")
+            print("  Type = {:d}".format(self.midifile.type))
+            print("  Length = {:2f}s".format(self.midifile.length))
+            print("  Tracks = {:d}".format(len(self.midifile.tracks)))
+            print("  Messages = {:d}".format(len(self.midimsgs)))
+            print("  Ticks Per Beat = {:d}".format(self.midifile.ticks_per_beat))
+
+        self.midiindex = -1
+        self.miditime = 0
+        return True
+
+    def is_loaded(self):
+        return self.midifile and self.midimsgs
+
+    def get_duration(self):
+        if not self.is_loaded():
+            return 0
+        return self.midifile.length
+
+    def get_next_message(self):
+        if not self.midimsgs or self.midiindex >= len(self.midimsgs)-1:
+            return False
+
+        msg = self.midimsgs[self.midiindex+1]
+        self.miditime += msg.time
+        self.midiindex += 1
+
+        # Recursively find next real message
+        if msg.is_meta:
+            return self.get_next_message()
+
+        return msg
+    def send_next_message(self):
+        msg = self.get_next_message()
+        if not msg or msg.is_meta:
+            return False
+        return self.send_message(msg.bytes())
+
+    def get_current_message_time(self):
+        if not self.is_loaded():
+            return 0
+        return self.miditime
+    def get_next_message_time(self, index = None):
+        if not self.is_loaded():
+            return 0
+
+        if index is None:
+            index = self.midiindex
+
+        if index >= len(self.midimsgs) - 1:
+            return self.get_duration()
+
+        # Recursively find next real message
+        if self.midimsgs[index+1].is_meta:
+            return self.get_next_message_time(index+1)
+
+        return self.miditime + self.midimsgs[index+1].time
 
     def destroy(self):
         self._destroy = True
+        while self._watching:
+            time.sleep(self.settings.get_threaddelay())
 
     def close(self):
         self.destroy()

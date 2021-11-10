@@ -4,10 +4,8 @@ import threading
 import alsaaudio
 import wave
 
-class OctoAudio(threading.Thread):
+class OctoAudio():
     def __init__(self, settings):
-        super(OctoAudio, self).__init__()
-
         self.settings = settings
 
         # Set parameters
@@ -15,8 +13,8 @@ class OctoAudio(threading.Thread):
         self.devicename = self.settings.get_audiodevice()
 
         self.filepath = False
-        self.active = False
-        self._destroy = False
+        self.wav = False
+        self.device = False
 
         if self.settings.get_verbose():
             self.__list_cards()
@@ -38,7 +36,7 @@ class OctoAudio(threading.Thread):
         try:
             device = alsaaudio.PCM(
                 type=alsaaudio.PCM_PLAYBACK,
-                mode=alsaaudio.PCM_NORMAL,
+                mode=alsaaudio.PCM_NONBLOCK,
                 device=self.devicename,
                 periodsize=self.periodsize,
                 channels=channels,
@@ -55,61 +53,83 @@ class OctoAudio(threading.Thread):
 
         return device
 
-    def run(self):
-        while self._destroy == False:
-            if self.active == True and self.filepath:
-
-                with wave.open(self.filepath, 'rb') as wav:
-                    format = None
-                    if wav.getsampwidth() == 1:
-                        format = alsaaudio.PCM_FORMAT_U8
-                    elif wav.getsampwidth() == 2:
-                        format = alsaaudio.PCM_FORMAT_S16_LE
-                    elif wav.getsampwidth() == 3:
-                        format = alsaaudio.PCM_FORMAT_S24_3LE
-                    elif wav.getsampwidth() == 4:
-                        format = alsaaudio.PCM_FORMAT_S32_LE
-                    else:
-                        if self.settings.get_verbose():
-                            print('Unsupported wave file format: {}'.format(wav.getsampwidth()))
-                        self.active = False
-                        break
-
-                    if self.settings.get_verbose():
-                        print("Wave File Parameters:")
-                        print("  Channels = {:d}".format(wav.getnchannels()))
-                        print("  Sample Rate = {:d}".format(wav.getframerate()))
-                        print("  Format = {}".format(format))
-                        print("  Buffer Size = {}".format(self.periodsize))
-
-                    with self.__setup_device(wav.getnchannels(), wav.getframerate(), format) as device:
-                        data = wav.readframes(self.periodsize)
-                        while data and self.active and not self._destroy:
-                            device.write(data)
-                            data = wav.readframes(self.periodsize)
-
-                    wav.close()
-                    if self.settings.get_verbose():
-                        print("Wave file reading complete.")
-
-                self.active = False
-            time.sleep(self.settings.get_threaddelay())
-
-    def play(self):
-        self.active = True
-
-    def stop(self, delay=True):
-        self.active = False
-        if delay:
-            time.sleep(self.settings.get_threaddelay())
+    def stop(self):
+        if self.wav:
+            self.wav.close()
+        self.wav = False
+        self.device = False
 
     def load(self, filepath):
-        if self.active == True:
-            self.stop()
-        self.filepath = os.path.abspath(filepath)
+        self.stop()
 
-    def destroy(self):
-        self._destroy = True
+        self.filepath = os.path.abspath(filepath)
+        try:
+            self.wav = wave.open(self.filepath, 'rb')
+        except Exception:
+            if self.settings.get_verbose():
+                print('Unable to open wave file: {}.'.format(self.filepath))
+            self.filepath = False
+            self.wav = False
+            return False
+
+        format = None
+        if self.wav.getsampwidth() == 1:
+            format = alsaaudio.PCM_FORMAT_U8
+        elif self.wav.getsampwidth() == 2:
+            format = alsaaudio.PCM_FORMAT_S16_LE
+        elif self.wav.getsampwidth() == 3:
+            format = alsaaudio.PCM_FORMAT_S24_3LE
+        elif self.wav.getsampwidth() == 4:
+            format = alsaaudio.PCM_FORMAT_S32_LE
+        else:
+            if self.settings.get_verbose():
+                print('Unsupported wave file format: {}.'.format(self.wav.getsampwidth()))
+            self.wav = False
+            return False
+
+        if self.settings.get_verbose():
+            print("Wave File Parameters:")
+            print("  Channels = {:d}".format(self.wav.getnchannels()))
+            print("  Sample Rate = {:d}".format(self.wav.getframerate()))
+            print("  Format = {}".format(format))
+            print("  Buffer Size = {}".format(self.periodsize))
+
+        try:
+            self.device = self.__setup_device(self.wav.getnchannels(), self.wav.getframerate(), format)
+        except Exception:
+            self.device = False
+        if not self.device:
+            if self.settings.get_verbose():
+                print("Unable to initialize audio device.")
+            self.wav = False
+            self.device = False
+            return False
+
+        return True
+
+    def is_loaded(self):
+        return self.wav
+
+    def get_duration(self):
+        if not self.is_loaded():
+            return False
+        return self.wav.getnframes() / float(self.wav.getframerate())
+
+    def get_period_duration(self):
+        if not self.is_loaded():
+            return 0
+        return self.periodsize / float(self.wav.getframerate())
+
+    def write_buffer(self):
+        if not self.wav or not self.device:
+            return False
+
+        data = self.wav.readframes(self.periodsize)
+        if not data:
+            return False
+
+        self.device.write(data)
+        return True
 
     def close(self):
-        self.destroy()
+        self.stop()

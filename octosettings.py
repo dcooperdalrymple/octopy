@@ -42,6 +42,10 @@ class OctoSettings:
 
     def get_verbose(self):
         return self.data['verbose']
+    def get_threaddelay(self):
+        return self.data['threaddelay']
+    def get_keyboardcontrol(self):
+        return self.data['keyboardcontrol']
 
     def get_audiodevice(self):
         return self.data['audiodevice']
@@ -58,6 +62,8 @@ class OctoSettings:
         return self.data['midiindevice']
     def get_midioutdevice(self):
         return self.data['midioutdevice']
+    def get_serialport(self):
+        return self.data['serialport']
 
     def get_midiinchannel(self):
         return self.data['midiinchannel']
@@ -70,12 +76,6 @@ class OctoSettings:
     def set_midichannels(self, input, output):
         self.set_midiinchannel(input)
         self.set_midioutchannel(output)
-
-    def get_serialport(self):
-        return self.data['serialport']
-
-    def get_threaddelay(self):
-        return self.data['threaddelay']
 
     def parse_config(self, path):
         data = {}
@@ -92,6 +92,8 @@ class OctoSettings:
                 data['verbose'] = config['Application'].getboolean('Verbose')
             if 'ThreadDelay' in config['Application']:
                 data['threaddelay'] = config['Application'].getfloat('ThreadDelay')
+            if 'KeyboardControl' in config['Application']:
+                data['keyboardcontrol'] = config['Application'].getboolean('KeyboardControl')
 
         if 'Media' in config:
             if 'Local' in config['Media']:
