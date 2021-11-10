@@ -228,7 +228,7 @@ class OctoMidi():
             print("  Length = {:2f}s".format(self.midifile.length))
             print("  Tracks = {:d}".format(len(self.midifile.tracks)))
             print("  Messages = {:d}".format(len(self.midimsgs)))
-            print("  Ticks Per Beat = {:d}".format(self.midifile.ticks_per_beat))
+            print("  Ticks Per Beat = {:d}\n".format(self.midifile.ticks_per_beat))
 
         self.midiindex = -1
         self.miditime = 0

@@ -45,7 +45,7 @@ def handle_midi(note):
 
         file = files.getfiles()[note-1]
         if settings.get_verbose():
-            print("File Selected: " + file.get_description())
+            print("File Selected: {}\n".format(file.get_description()))
 
         manager.load(file)
         manager.start()
@@ -93,7 +93,10 @@ if __name__ == '__main__':
 
     # Wait for keyboard interrupt
     if settings.get_verbose():
-        print("Entering main loop. Press 1-9 to play file. Press 0 to stop. Press Q or Control-C to exit.\n")
+        if settings.get_keyboardcontrol():
+            print("Entering main loop. Press 1-9 to play file. Press 0 to stop. Press Q or Control-C to exit.\n")
+        else:
+            print("Entering main loop. Press Control-C to exit.\n")
     try:
         getch = _Getch()
         while True:
