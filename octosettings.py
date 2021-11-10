@@ -51,6 +51,9 @@ class OctoSettings:
         return self.data['audiodevice']
     def get_buffersize(self):
         return self.data['buffersize']
+    def get_bufferpreload(self):
+        return self.data['bufferpreload']
+        
     def get_localmedia(self):
         return self.data['localmedia']
     def get_storagemedia(self):
@@ -108,6 +111,8 @@ class OctoSettings:
                 data['audiodevice'] = config['Audio']['Device']
             if 'BufferSize' in config['Audio']:
                 data['buffersize'] = config['Audio'].getint('BufferSize')
+            if 'BufferPreload' in config['Audio']:
+                data['bufferpreload'] = config['Audio'].getint('BufferPreload')
 
         if 'Midi' in config:
             if 'InDevice' in config['Midi']:

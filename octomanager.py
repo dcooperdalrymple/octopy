@@ -60,8 +60,8 @@ class OctoManager(threading.Thread):
         current_buffer = 0
 
         # Preload first 3 buffers
-        if self.audio.is_loaded():
-            for i in range(3):
+        if self.audio.is_loaded() and self.settings.get_bufferpreload() > 0:
+            for i in range(self.settings.get_bufferpreload()):
                 self.audio.write_buffer()
 
         while self.active and deltatime <= duration:
@@ -69,10 +69,12 @@ class OctoManager(threading.Thread):
             deltatime = currenttime - starttime
 
             # Check if we need an audio buffer write
-            if self.audio.is_loaded() and current_buffer < total_buffers and deltatime >= (current_buffer + 1) * buffer_duration:
-                if not self.audio.write_buffer():
-                    current_buffer = total_buffers
-                current_buffer += 1
+            if self.audio.is_loaded() and current_buffer < total_buffers:
+                while current_buffer < total_buffers and deltatime >= (current_buffer + 1) * buffer_duration:
+                    if not self.audio.write_buffer():
+                        current_buffer = total_buffers
+                    else:
+                        current_buffer += 1
 
             # Check if we need to write a midi message
             if self.midi.is_loaded():
