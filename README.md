@@ -2,22 +2,40 @@
 
 Multi-channel midi-capable audio/midi player on the Raspberry Pi platform using Python 3.
 
-_By D. Cooper Dalrymple, 2021_
+_By [D. Cooper Dalrymple](https://dcdalrymple.com/), 2021_
+
+## What is this and what is it for?
+
+Octopy is intended to be used to play audio tracks synchronized with midi tracks when triggered by midi for the purpose of live music performances. This way, midi-controlled devices (drum machines, keyboards, etc) can be sequenced with a backing track and controlled by a simple and fitting midi device all within a small package, no laptops and fancy DAWs required.
+
+This software could also be configured to play midi files into a midi sound device such as the MT32 or simply play back audio files for other purposes triggered from a device in another location. It is not required that both audio & midi files are provided for each track.
 
 ## Requirements
 
-* Python 3.x
-* pyalsaaudio
-* python-rtmidi
-* pyserial
-* wave
-* mido
+### Hardware
+
+#### Compatible Devices:
+
+* Raspberry Pi 3 or greater _- Raspberry Pi 1 experiences stuttering in midi and audio output (Model 3 A+ used for testing)_
+* Linux-based x86-64/ARM computer _- This software has not been optimized for Windows or Mac_
+
+#### Compatible Raspberry Pi Hats:
+
+* HiFiBerry Audio Hats _- Tested with the [DAC+ Standard](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-rca-version/)_
+* Serial-based MIDI Hats _- ie: [OSA MIDI Board](https://www.osaelectronics.com/product/midi-board-for-raspberry-pi/) ([custom board](https://www.smbaker.com/raspberry-pi-midi-hat-building-a-raspberry-pi-midi-jukebox) used for testing)_
+
+### Software
+
+* Linux-based OS _- ideally Raspberry Pi OS Lite_
+* Python 3.x with pyalsaaudio, python-rtmidi, pyserial, wave, and mido modules
+* ALSA
+* JACK Audio Connection Kit
 
 ## Installation
 
 ### Dependencies
 
-On Unix systems, ensure that all dependencies are met by typing `sudo apt-get install libasound2-dev libjack-dev` and `pip3 install pyalsaaudio python-rtmidi pyserial wave mido` in the terminal.
+On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typing `sudo apt-get install libasound2-dev libjack-dev` and `pip3 install pyalsaaudio python-rtmidi pyserial wave mido` in the terminal.
 
 ### Configuration
 
