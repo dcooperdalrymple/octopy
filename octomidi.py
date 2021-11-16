@@ -179,14 +179,15 @@ class OctoMidi():
 
         return 255
 
-    def send_message(self, data):
+    def send_message(self, data, block = False):
         if not isinstance(data, bytes):
             data = bytes(data)
         if self.out_port != 'gpio' and self.midiout:
             self.midiout.send_message(data)
         elif self.serial:
             self.serial.write(data)
-            self.serial.flush()
+            if block:
+                self.serial.flush()
         else:
             return False
         return True
