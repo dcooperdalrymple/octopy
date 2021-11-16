@@ -4,6 +4,8 @@ import threading
 import alsaaudio
 import wave
 
+from octofiles import OctoFile
+
 class OctoAudio():
     def __init__(self, settings):
         self.settings = settings
@@ -13,6 +15,7 @@ class OctoAudio():
         self.devicename = self.settings.get_audiodevice()
 
         self.filepath = False
+        self.preloaded = False
         self.wav = False
         self.device = False
 
@@ -54,7 +57,7 @@ class OctoAudio():
         return device
 
     def stop(self):
-        if self.wav:
+        if self.wav and not self.preloaded:
             self.wav.close()
         self.wav = False
         self.device = False
@@ -62,15 +65,31 @@ class OctoAudio():
     def load(self, filepath):
         self.stop()
 
-        self.filepath = os.path.abspath(filepath)
-        try:
-            self.wav = wave.open(self.filepath, 'rb')
-        except Exception:
-            if self.settings.get_verbose():
-                print('Unable to open wave file: {}.'.format(self.filepath))
-            self.filepath = False
-            self.wav = False
-            return False
+        if isinstance(filepath, OctoFile):
+            if not filepath.has_wave():
+                return False
+            self.filepath = os.path.abspath(filepath.wavepath)
+            if filepath.is_wave_loaded():
+                self.wav = filepath.wavefile
+                self.wav.rewind()
+                self.preloaded = True
+                if self.settings.get_verbose():
+                    print("Using preloaded wave data.")
+            else:
+                self.preloaded = False
+        else:
+            self.filepath = os.path.abspath(filepath)
+            self.preloaded = False
+
+        if not self.wav:
+            try:
+                self.wav = wave.open(self.filepath, 'rb')
+            except Exception:
+                if self.settings.get_verbose():
+                    print('Unable to open wave file: {}.'.format(self.filepath))
+                self.filepath = False
+                self.wav = False
+                return False
 
         format = None
         if self.wav.getsampwidth() == 1:

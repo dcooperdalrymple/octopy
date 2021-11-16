@@ -1,12 +1,20 @@
 import os
 import subprocess
 
+import wave
+from mido import MidiFile
+
 class OctoFile:
     def __init__(self, path):
         self.dir = os.path.dirname(path)
         self.name = os.path.splitext(os.path.basename(path))[0]
+
         self.wavepath = self.find_wave()
+        self.wavefile = False
+
         self.midipath = self.find_midi()
+        self.midifile = False
+        self.midimsgs = False
 
     def find_wave(self):
         path = os.path.join(self.dir, self.name + '.wav')
@@ -35,9 +43,41 @@ class OctoFile:
 
     def has_wave(self):
         return self.wavepath != False
+    def is_wave_loaded(self):
+        return self.has_wave() and self.wavefile
 
     def has_midi(self):
         return self.midipath != False
+    def is_midi_loaded(self):
+        return self.has_midi() and self.midifile and self.midimsgs
+
+    def load(self):
+        if self.has_wave():
+            filepath = os.path.abspath(self.wavepath)
+            try:
+                self.wavefile = wave.open(filepath, 'rb')
+            except Exception:
+                if self.settings.get_verbose():
+                    print('Unable to open wave file: {}.'.format(filepath))
+                self.wavefile = False
+                return False
+
+        if self.has_midi():
+            filepath = os.path.abspath(self.midipath)
+            try:
+                self.midifile = MidiFile(filepath)
+            except Exception:
+                if self.settings.get_verbose():
+                    print('Unable to open midi file: {}.'.format(filepath))
+                self.midifile = False
+                self.midimsgs = False
+                return False
+
+            self.midimsgs = []
+            for msg in self.midifile:
+                self.midimsgs.append(msg)
+
+        return True
 
 class OctoFiles:
     def __init__(self, settings):
@@ -70,6 +110,24 @@ class OctoFiles:
             return False
         else:
             return self.files
+
+    def loadfiles(self):
+        if not self.files:
+            return False
+
+        if self.settings.get_verbose():
+            print("Preloading media files:")
+        i = 0
+        for file in self.files:
+            i += 1
+            if file.load() and self.settings.get_verbose():
+                print("  {:d}: {} ({}): Successfully loaded.".format(i, file.name, file.get_type()))
+            elif self.settings.get_verbose():
+                print("{} ({}): Failed to load.".format(file.name, file.get_type()))
+        if self.settings.get_verbose():
+            print()
+
+        return True
 
     def print(self):
         if not self.files:

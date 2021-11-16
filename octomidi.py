@@ -11,6 +11,8 @@ from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF,
 
 from mido import MidiFile
 
+from octofiles import OctoFile
+
 class OctoMidiHandler(object):
     def __init__(self, port, channel, callback, verbose=False):
         self.port = port
@@ -208,20 +210,32 @@ class OctoMidi():
     def load(self, path):
         self.stop()
 
-        self.midifilepath = os.path.abspath(path)
-        try:
-            self.midifile = MidiFile(self.midifilepath)
-        except Exception:
-            if self.settings.get_verbose():
-                print('Unable to open midi file: {}.'.format(self.midifilepath))
-            self.midifilepath = False
-            self.midifile = False
-            self.midimsgs = False
-            return False
+        if isinstance(path, OctoFile):
+            if not path.has_midi():
+                return False
+            self.midifilepath = os.path.abspath(path.midipath)
+            if path.is_midi_loaded():
+                self.midifile = path.midifile
+                self.midimsgs = path.midimsgs
+                if self.settings.get_verbose():
+                    print("Using preloaded midi data.")
+        else:
+            self.midifilepath = os.path.abspath(path)
 
-        self.midimsgs = []
-        for msg in self.midifile:
-            self.midimsgs.append(msg)
+        if not self.midifile or not self.midimsgs:
+            try:
+                self.midifile = MidiFile(self.midifilepath)
+            except Exception:
+                if self.settings.get_verbose():
+                    print('Unable to open midi file: {}.'.format(self.midifilepath))
+                self.midifilepath = False
+                self.midifile = False
+                self.midimsgs = False
+                return False
+
+            self.midimsgs = []
+            for msg in self.midifile:
+                self.midimsgs.append(msg)
 
         if self.settings.get_verbose():
             print("Midi File Parameters")

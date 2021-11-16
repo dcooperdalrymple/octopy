@@ -53,13 +53,15 @@ class OctoSettings:
         return self.data['buffersize']
     def get_bufferpreload(self):
         return self.data['bufferpreload']
-        
+
     def get_localmedia(self):
         return self.data['localmedia']
     def get_storagemedia(self):
         return self.data['storagemedia']
     def get_storagemount(self):
         return self.data['storagemount']
+    def get_preloadmedia(self):
+        return self.data['preloadmedia']
 
     def get_midiindevice(self):
         return self.data['midiindevice']
@@ -105,6 +107,8 @@ class OctoSettings:
                 data['storagemedia'] = config['Media']['Storage']
             if 'Mount' in config['Media']:
                 data['storagemount'] = config['Media']['Mount']
+            if 'Preload' in config['Media']:
+                data['preloadmedia'] = config['Media'].getboolean('Preload')
 
         if 'Audio' in config:
             if 'Device' in config['Audio']:

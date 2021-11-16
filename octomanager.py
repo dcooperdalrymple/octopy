@@ -98,8 +98,8 @@ class OctoManager():
 
         if self.file.has_wave():
             if self.settings.get_verbose():
-                print("Loading wave file.")
-            if not self.audio.load(self.file.wavepath):
+                print("Loading wave file: {}.".format(self.file.wavepath))
+            if not self.audio.load(self.file):
                 self.file = False
                 if self.settings.get_verbose():
                     print("Manager couldn't load, failed to load audio file.")
@@ -107,8 +107,8 @@ class OctoManager():
 
         if self.file.has_midi():
             if self.settings.get_verbose():
-                print("Loading midi file.")
-            if not self.midi.load(self.file.midipath):
+                print("Loading midi file: {}.".format(self.file.midipath))
+            if not self.midi.load(self.file):
                 self.file = False
                 if self.settings.get_verbose():
                     print("Manager couldn't load, failed to load midi file.")

@@ -80,6 +80,10 @@ if __name__ == '__main__':
     if settings.get_verbose():
         files.print()
 
+    # Preload Files
+    if settings.get_preloadmedia():
+        files.loadfiles()
+
     # Initialize Audio
     audio = OctoAudio(settings)
 
