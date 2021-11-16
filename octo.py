@@ -5,7 +5,7 @@
 # Description: Multi-channel midi-activated audio player with synchronized midi output on the Raspberry Pi platform
 # Author: D Cooper Dalrymple (https://dcdalrymple.com/)
 # Created: 2017-10-19
-# Updated: 2021-11-09
+# Updated: 2021-11-16
 
 try:
     import sys
@@ -109,9 +109,11 @@ if __name__ == '__main__':
             else:
                 time.sleep(1)
     except KeyboardInterrupt:
-        print()
+        if settings.get_verbose():
+            print()
     finally:
-        print("Exiting Octopy.")
+        if settings.get_verbose():
+            print("Exiting Octopy.")
 
         manager.stop()
         audio.close()
