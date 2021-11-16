@@ -53,6 +53,7 @@ class OctoMidi():
         self.midifilepath = False
         self.midifile = False
         self.midimsgs = False
+        self.midilength = 0
         self.midiindex = 0
         self.miditime = 0
 
@@ -206,6 +207,7 @@ class OctoMidi():
         self.midifilepath = False
         self.midifile = False
         self.midimsgs = False
+        self.midilength = 0
 
     def load(self, path):
         self.stop()
@@ -217,6 +219,7 @@ class OctoMidi():
             if path.is_midi_loaded():
                 self.midifile = path.midifile
                 self.midimsgs = path.midimsgs
+                self.midilength = path.midilength
                 if self.settings.get_verbose():
                     print("Using preloaded midi data.")
         else:
@@ -231,16 +234,19 @@ class OctoMidi():
                 self.midifilepath = False
                 self.midifile = False
                 self.midimsgs = False
+                self.midilength = 0
                 return False
 
             self.midimsgs = []
             for msg in self.midifile:
                 self.midimsgs.append(msg)
 
+            self.midilength = self.midifile.length
+
         if self.settings.get_verbose():
             print("Midi File Parameters")
             print("  Type = {:d}".format(self.midifile.type))
-            print("  Length = {:2f}s".format(self.midifile.length))
+            print("  Length = {:2f}s".format(self.midilength))
             print("  Tracks = {:d}".format(len(self.midifile.tracks)))
             print("  Messages = {:d}".format(len(self.midimsgs)))
             print("  Ticks Per Beat = {:d}\n".format(self.midifile.ticks_per_beat))
@@ -255,7 +261,7 @@ class OctoMidi():
     def get_duration(self):
         if not self.is_loaded():
             return 0
-        return self.midifile.length
+        return self.midilength
 
     def get_next_message(self):
         if not self.midimsgs or self.midiindex >= len(self.midimsgs)-1:

@@ -15,6 +15,7 @@ class OctoFile:
         self.midipath = self.find_midi()
         self.midifile = False
         self.midimsgs = False
+        self.midilength = 0
 
     def find_wave(self):
         path = os.path.join(self.dir, self.name + '.wav')
@@ -76,6 +77,8 @@ class OctoFile:
             self.midimsgs = []
             for msg in self.midifile:
                 self.midimsgs.append(msg)
+
+            self.midilength = self.midifile.length
 
         return True
 
