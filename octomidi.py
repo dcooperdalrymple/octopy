@@ -308,6 +308,7 @@ class OctoMidi():
             time.sleep(self.settings.get_threaddelay())
 
     def close(self):
+        self.stop()
         self.destroy()
 
         if self.in_port != 'gpio':

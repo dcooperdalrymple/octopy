@@ -5,9 +5,10 @@ import wave
 from mido import MidiFile
 
 class OctoFile:
-    def __init__(self, path):
+    def __init__(self, path, settings = False):
         self.dir = os.path.dirname(path)
         self.name = os.path.splitext(os.path.basename(path))[0]
+        self.settings = settings
 
         self.wavepath = self.find_wave()
         self.wavefile = False
@@ -58,7 +59,7 @@ class OctoFile:
             try:
                 self.wavefile = wave.open(filepath, 'rb')
             except Exception:
-                if self.settings.get_verbose():
+                if self.settings and self.settings.get_verbose():
                     print('Unable to open wave file: {}.'.format(filepath))
                 self.wavefile = False
                 return False
@@ -68,7 +69,7 @@ class OctoFile:
             try:
                 self.midifile = MidiFile(filepath)
             except Exception:
-                if self.settings.get_verbose():
+                if self.settings and self.settings.get_verbose():
                     print('Unable to open midi file: {}.'.format(filepath))
                 self.midifile = False
                 self.midimsgs = False
@@ -91,7 +92,7 @@ class OctoFiles:
 
     def __add_file(self, path):
         if path.endswith(".wav") or path.endswith(".mid"):
-            file = OctoFile(path)
+            file = OctoFile(path, self.settings)
             for f in self.files:
                 if f.name == file.name:
                     return
@@ -126,7 +127,7 @@ class OctoFiles:
             if file.load() and self.settings.get_verbose():
                 print("  {:d}: {} ({}): Successfully loaded.".format(i, file.name, file.get_type()))
             elif self.settings.get_verbose():
-                print("{} ({}): Failed to load.".format(file.name, file.get_type()))
+                print("  {:d}: {} ({}): Failed to load.".format(i, file.name, file.get_type()))
         if self.settings.get_verbose():
             print()
 
@@ -141,6 +142,10 @@ class OctoFiles:
         for i in range(len(self.files)):
             print("  {:d}: {}".format(i+1, self.files[i].get_description()))
         print()
+
+    def sort(self):
+        self.files.sort(key=lambda x: x.name, reverse=False)
+        return True
 
 class OctoUsb:
     def __init__(self, settings):

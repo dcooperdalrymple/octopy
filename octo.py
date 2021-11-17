@@ -76,6 +76,7 @@ if __name__ == '__main__':
         usb = OctoUsb(settings)
         if usb.getpath():
             files.append(usb.getfiles())
+    files.sort()
 
     if settings.get_verbose():
         files.print()
