@@ -59,15 +59,14 @@ def led_setup(pin=False):
     if not type(pin) is int or pin <= 0:
         return False
 
-    if 'RPi.GPIO' not in sys.modules:
-        try:
-            import RPi.GPIO
-        except ImportError as err:
-            return False
+    try:
+        import RPi.GPIO
+    except ImportError as err:
+        return False
 
-    RPi.GPIO.setmode(GPIO.BCM)
+    RPi.GPIO.setmode(RPi.GPIO.BCM)
     RPi.GPIO.setwarnings(False)
-    RPi.GPIO.setup(pin, GPIO.OUT)
+    RPi.GPIO.setup(pin, RPi.GPIO.OUT)
     return True
 
 def led_high(pin=False):
@@ -76,7 +75,9 @@ def led_high(pin=False):
     if not type(pin) is int or pin <= 0:
         return False
 
-    if 'RPi.GPIO' not in sys.modules:
+    try:
+        import RPi.GPIO
+    except ImportError as err:
         return False
 
     RPi.GPIO.output(pin, GPIO.HIGH)
@@ -88,7 +89,9 @@ def led_low(pin=False):
     if not type(pin) is int or pin <= 0:
         return False
 
-    if 'RPi.GPIO' not in sys.modules:
+    try:
+        import RPi.GPIO
+    except ImportError as err:
         return False
 
     RPi.GPIO.output(pin, GPIO.LOW)
