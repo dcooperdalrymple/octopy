@@ -53,6 +53,47 @@ def handle_midi(note):
     elif note == 0:
         manager.stop()
 
+def led_setup(pin=False):
+    if pin == False:
+        pin = settings.get_statusled()
+    if not type(pin) is int or pin <= 0:
+        return False
+
+    if 'RPi.GPIO' not in sys.modules:
+        try:
+            import RPi.GPIO
+        except ImportError as err:
+            return False
+
+    RPi.GPIO.setmode(GPIO.BCM)
+    RPi.GPIO.setwarnings(False)
+    RPi.GPIO.setup(pin, GPIO.OUT)
+    return True
+
+def led_high(pin=False):
+    if pin == False:
+        pin = settings.get_statusled()
+    if not type(pin) is int or pin <= 0:
+        return False
+
+    if 'RPi.GPIO' not in sys.modules:
+        return False
+
+    RPi.GPIO.output(pin, GPIO.HIGH)
+    return True
+
+def led_low(pin=False):
+    if pin == False:
+        pin = settings.get_statusled()
+    if not type(pin) is int or pin <= 0:
+        return False
+
+    if 'RPi.GPIO' not in sys.modules:
+        return False
+
+    RPi.GPIO.output(pin, GPIO.LOW)
+    return True
+
 if __name__ == '__main__':
 
     settings = OctoSettings()
@@ -69,6 +110,15 @@ if __name__ == '__main__':
     parser.add_argument('--midioutchannel', type=int, default=settings.get('midioutchannel'), metavar='Midi Output Channel', help='When > 0, force a midi channel. Otherwise, use original midi message channels.')
 
     settings.set(parser.parse_args())
+
+    # Configure LED if enabled
+    if not led_setup() and settings.get_statusled() > 0:
+        settings.set_statusled(0)
+        if settings.get_verbose():
+            print("Could not initialize status LED.")
+
+    # LED high to indicate we're loading
+    led_high()
 
     # Initialize and build file list (local and storage)
     files = OctoFiles(settings)
@@ -94,7 +144,10 @@ if __name__ == '__main__':
     midi.open()
 
     # Setup Audio/Midi Manager
-    manager = OctoManager(settings, audio, midi)
+    manager = OctoManager(settings, audio, midi, led_high, led_low)
+
+    # Turn off LED to indicate loading completion
+    led_low()
 
     # Wait for keyboard interrupt
     if settings.get_verbose():

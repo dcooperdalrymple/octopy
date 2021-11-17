@@ -46,6 +46,10 @@ class OctoSettings:
         return self.data['threaddelay']
     def get_keyboardcontrol(self):
         return self.data['keyboardcontrol']
+    def get_statusled(self):
+        return self.data['statusled']
+    def set_statusled(self, value):
+        self.data['statusled'] = value
 
     def get_audiodevice(self):
         return self.data['audiodevice']
@@ -99,6 +103,8 @@ class OctoSettings:
                 data['threaddelay'] = config['Application'].getfloat('ThreadDelay')
             if 'KeyboardControl' in config['Application']:
                 data['keyboardcontrol'] = config['Application'].getboolean('KeyboardControl')
+            if 'StatusLed' in config['Application']:
+                data['statusled'] = config['Application'].getint('StatusLed')
 
         if 'Media' in config:
             if 'Local' in config['Media']:

@@ -79,13 +79,16 @@ class OctoManagerThread(threading.Thread):
         return True
 
 class OctoManager():
-    def __init__(self, settings, audio, midi):
+    def __init__(self, settings, audio, midi, start_callback=None, stop_callback=None):
         self.settings = settings
         self.audio = audio
         self.midi = midi
 
         self.file = False
         self.thread = False
+
+        self.start_callback = start_callback
+        self.stop_callback = stop_callback
 
     def load(self, file):
         self.file = file
@@ -120,10 +123,15 @@ class OctoManager():
         if not self.file:
             if self.settings.get_verbose():
                 print("Manager couldn't start, missing file or not loaded properly.")
-            return
+            return False
 
         self.thread = OctoManagerThread(self.settings, self.audio, self.midi)
         self.thread.start()
+
+        if callable(self.start_callback):
+            self.start_callback()
+
+        return True
 
     def stop(self):
         self.file = False
@@ -138,9 +146,13 @@ class OctoManager():
         while not self.thread.stopped:
             time.sleep(self.settings.get_threaddelay())
 
+        del self.thread
+        self.thread = False
+
         if self.settings.get_verbose():
             print('Audio and midi halted.')
 
-        del self.thread
-        self.thread = False
+        if callable(self.stop_callback):
+            self.stop_callback()
+
         return True
