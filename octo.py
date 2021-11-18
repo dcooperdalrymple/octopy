@@ -80,7 +80,7 @@ def led_high(pin=False):
     except ImportError as err:
         return False
 
-    RPi.GPIO.output(pin, GPIO.HIGH)
+    RPi.GPIO.output(pin, RPi.GPIO.HIGH)
     return True
 
 def led_low(pin=False):
@@ -94,7 +94,7 @@ def led_low(pin=False):
     except ImportError as err:
         return False
 
-    RPi.GPIO.output(pin, GPIO.LOW)
+    RPi.GPIO.output(pin, RPi.GPIO.LOW)
     return True
 
 if __name__ == '__main__':
