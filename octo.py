@@ -49,9 +49,13 @@ def handle_midi(note):
 
         manager.load(file)
         manager.start()
+        return True # Note processed
 
     elif note == 0:
         manager.stop()
+        return True # Note processed
+
+    return False # Passthrough note
 
 def led_setup(pin=False):
     if pin == False:

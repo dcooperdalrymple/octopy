@@ -14,10 +14,12 @@ from mido import MidiFile
 from octofiles import OctoFile
 
 class OctoMidiHandler(object):
-    def __init__(self, port, channel, callback, verbose=False):
+    def __init__(self, midi, port, channel, callback, thru=False, verbose=False):
+        self.midi = midi
         self.port = port
         self.channel = channel
         self.callback = callback
+        self.thru = thru
         self.verbose = verbose
 
         self._wallclock = time.time()
@@ -35,11 +37,14 @@ class OctoMidiHandler(object):
         if self.verbose:
             print("Midi Received = [ Status: 0x{:x}, Note: {:d}, Velocity: {:d} ]".format(status, note, velocity))
 
-        self.parse_event(status, note, velocity)
+        if self.parse_event(status, note, velocity) == False and self.thru == True:
+            self.midi.send_message(message)
 
     def parse_event(self, status, note, velocity):
         if status & 0xf0 == NOTE_ON and (self.channel <= 0 or status & 0x0f == self.channel) and velocity > 0:
-            self.callback(note)
+            return self.callback(note)
+        else:
+            return False
 
 class OctoMidi():
     def __init__(self, settings):
@@ -126,7 +131,7 @@ class OctoMidi():
             print("Selected Midi Output Device: {}\n".format(self.out_port))
 
         # Register MidiIn Callback
-        self.handler = OctoMidiHandler(self.in_port, self.inchannel, self.callback, self.settings.get_verbose())
+        self.handler = OctoMidiHandler(self, self.in_port, self.inchannel, self.callback, self.settings.get_midithru(), self.settings.get_verbose())
         if self.in_port != 'gpio':
             self.midiin.set_callback(self.handler)
         elif self.serial:

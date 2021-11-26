@@ -73,6 +73,8 @@ class OctoSettings:
         return self.data['midioutdevice']
     def get_serialport(self):
         return self.data['serialport']
+    def get_midithru(self):
+        return self.data['midithru']
 
     def get_midiinchannel(self):
         return self.data['midiinchannel']
@@ -135,5 +137,7 @@ class OctoSettings:
                 data['midioutchannel'] = config['Midi'].getint('OutChannel')
             if 'SerialPort' in config['Midi']:
                 data['serialport'] = config['Midi']['SerialPort']
+            if 'Thru' in config['Midi']:
+                data['midithru'] = config['Midi'].getboolean('Thru')
 
         return data
