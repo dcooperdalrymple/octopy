@@ -88,6 +88,11 @@ class OctoSettings:
         self.set_midiinchannel(input)
         self.set_midioutchannel(output)
 
+    def get_midiclock(self):
+        return self.data['midiclock']
+    def set_midiclock(self, value):
+        self.data['midiclock'] = value
+
     def parse_config(self, path):
         data = {}
         if not os.path.exists(path):
@@ -139,5 +144,7 @@ class OctoSettings:
                 data['serialport'] = config['Midi']['SerialPort']
             if 'Thru' in config['Midi']:
                 data['midithru'] = config['Midi'].getboolean('Thru')
+            if 'ClockOut' in config['Midi']:
+                data['midiclock'] = config['Midi'].getboolean('ClockOut')
 
         return data

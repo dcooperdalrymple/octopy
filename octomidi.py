@@ -7,9 +7,9 @@ import serial
 import rtmidi
 from rtmidi.midiutil import open_midiinput
 from rtmidi.midiutil import open_midioutput
-from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE)
+from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE, TIMING_CLOCK, SONG_START, SONG_STOP)
 
-from mido import MidiFile
+from mido import (MidiFile, bpm2tempo)
 
 from octofiles import OctoFile
 
@@ -64,6 +64,8 @@ class OctoMidi():
 
         self._watching = False
         self._destroy = False
+
+        self.set_tempo(120.0, True)
 
     def set_callback(self, callback):
         self.callback = callback
@@ -187,6 +189,8 @@ class OctoMidi():
 
         return 255
 
+    def send_byte(self, value):
+        return self.send_message([value & 0xff])
     def send_message(self, data, block = False):
         if not isinstance(data, bytes):
             data = bytes(data)
@@ -268,11 +272,25 @@ class OctoMidi():
             return 0
         return self.midilength
 
+    def set_tempo(self, value, tempo_or_bpm = False):
+        if tempo_or_bpm:
+            value = bpm2tempo(value)
+        self.tempo = value
+        self.seconds_per_clock = (self.tempo / 1000000.0) / 24
+        self.last_clock = self.miditime
+
     def get_next_message(self):
         if not self.midimsgs or self.midiindex >= len(self.midimsgs)-1:
             return False
 
         msg = self.midimsgs[self.midiindex+1]
+        if self.settings.get_midiclock():
+            if msg.is_meta and msg.type == "set_tempo":
+                self.set_tempo(msg.tempo, False)
+            if msg.time + self.miditime > self.last_clock + self.seconds_per_clock:
+                self.last_clock = self.last_clock + self.seconds_per_clock
+                return TIMING_CLOCK
+
         self.miditime += msg.time
         self.midiindex += 1
 
@@ -283,6 +301,8 @@ class OctoMidi():
         return msg
     def send_next_message(self):
         msg = self.get_next_message()
+        if isinstance(msg, int) and msg > 0:
+            return self.send_byte(msg)
         if not msg or msg.is_meta:
             return False
         return self.send_message(msg.bytes())
@@ -301,11 +321,17 @@ class OctoMidi():
         if index >= len(self.midimsgs) - 1:
             return self.get_duration()
 
+        msg = self.midimsgs[index+1]
+
+        # See if we need a clock pulse
+        if self.settings.get_midiclock() and msg.time + self.miditime > self.last_clock + self.seconds_per_clock:
+            return self.last_clock + self.seconds_per_clock
+
         # Recursively find next real message
-        if self.midimsgs[index+1].is_meta:
+        if msg.is_meta:
             return self.get_next_message_time(index+1)
 
-        return self.miditime + self.midimsgs[index+1].time
+        return self.miditime + msg.time
 
     def destroy(self):
         self._destroy = True
