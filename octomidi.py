@@ -189,6 +189,10 @@ class OctoMidi():
 
         return 255
 
+    def send_start(self):
+        return self.send_byte(SONG_START)
+    def send_stop(self):
+        return self.send_byte(SONG_STOP)
     def send_byte(self, value):
         return self.send_message([value & 0xff])
     def send_message(self, data, block = False):

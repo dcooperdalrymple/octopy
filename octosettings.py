@@ -92,6 +92,10 @@ class OctoSettings:
         return self.data['midiclock']
     def set_midiclock(self, value):
         self.data['midiclock'] = value
+    def get_midisong(self):
+        return self.data['midisong']
+    def set_midisong(self, value):
+        self.data['midisong'] = value
 
     def parse_config(self, path):
         data = {}
@@ -146,5 +150,7 @@ class OctoSettings:
                 data['midithru'] = config['Midi'].getboolean('Thru')
             if 'ClockOut' in config['Midi']:
                 data['midiclock'] = config['Midi'].getboolean('ClockOut')
+            if 'SongOut' in config['Midi']:
+                data['midisong'] = config['Midi'].getboolean('SongOut')
 
         return data

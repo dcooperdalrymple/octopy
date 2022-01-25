@@ -37,6 +37,9 @@ class OctoManagerThread(threading.Thread):
         currenttime = starttime
         deltatime = 0
 
+        if self.midi.is_loaded() and self.settings.get_midisong():
+            self.midi.send_start()
+
         while self.active and deltatime <= duration:
             currenttime = time.time()
             deltatime = currenttime - starttime
@@ -65,6 +68,9 @@ class OctoManagerThread(threading.Thread):
                 delay = self.midi.get_current_message_time() - deltatime
             if delay > 0:
                 time.sleep(delay)
+
+        if self.midi.is_loaded() and self.settings.get_midisong():
+            self.midi.send_stop()
 
         self.midi.stop()
         self.audio.stop()
