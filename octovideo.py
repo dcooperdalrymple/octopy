@@ -23,7 +23,7 @@ class OctoVideo():
 
         if OMXPlayer.exists():
             self.player = OMXPlayer(self.settings)
-        if FFmpegPlayer.exists():
+        elif FFmpegPlayer.exists():
             self.player = FFmpegPlayer(self.settings)
         elif HelloPlayer.exists():
             self.player = HelloVideoPlayer(self.settings)
@@ -100,18 +100,14 @@ class OctoVideo():
             return False
         if not self.valid_path(path):
             return False
-        self.videopath = path
+        self.player.load(path)
         return True
-    def is_loaded(self):
-        return self.valid_path(self.videopath)
 
-    def play(self, path=None):
-        if path is None:
-            path = self.videopath
-        if not self.valid_path(path):
-            return False
-        self.player.play(path)
-        return True
+    def is_loaded(self):
+        return self.player.is_loaded()
+
+    def play(self):
+        return self.player.play()
 
     def stop(self):
         if self.player is None:
