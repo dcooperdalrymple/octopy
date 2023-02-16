@@ -18,6 +18,8 @@ class OctoFile:
         self.midimsgs = False
         self.midilength = 0
 
+        self.videopath = self.find_video()
+
     def find_wave(self):
         path = os.path.join(self.dir, self.name + '.wav')
         if os.path.isfile(path):
@@ -30,15 +32,25 @@ class OctoFile:
             return path
         return False
 
+    def find_video(self):
+        exts = ['avi', 'mov', 'mkv', 'mp4', 'm4v']
+        for ext in exts:
+            path = os.path.join(self.dir, self.name + '.' + ext)
+            if os.path.isfile(path):
+                return path
+        return False
+
     def get_type(self):
-        if self.has_wave() and self.has_midi():
-            return "WAV+MID"
-        elif self.has_wave():
-            return "WAV"
-        elif self.has_midi():
-            return "MID"
-        else:
+        types = []
+        if self.has_wave():
+            types.append("WAV")
+        if self.has_midi():
+            types.append("MID")
+        if self.has_video():
+            types.append("VID")
+        if not types:
             return "NONE"
+        return "+".join(types)
 
     def get_description(self):
         return "{} {} (found in '{}')".format(self.name, self.get_type(), self.dir)
@@ -52,6 +64,11 @@ class OctoFile:
         return self.midipath != False
     def is_midi_loaded(self):
         return self.has_midi() and self.midifile and self.midimsgs
+
+    def has_video(self):
+        return self.videopath != False
+    def is_video_loaded(self):
+        return self.has_video()
 
     def load(self):
         if self.has_wave():
@@ -81,6 +98,10 @@ class OctoFile:
 
             self.midilength = self.midifile.length
 
+        if self.has_video():
+            # OMX will handle video, don't need to load manually
+            pass
+
         return True
 
 class OctoFiles:
@@ -91,12 +112,14 @@ class OctoFiles:
         self.__locate_files()
 
     def __add_file(self, path):
-        if path.endswith(".wav") or path.endswith(".mid"):
-            file = OctoFile(path, self.settings)
-            for f in self.files:
-                if f.name == file.name:
-                    return
-            self.files.append(file)
+        exts = ['wav', 'mid', 'avi', 'mov', 'mkv', 'mp4', 'm4v']
+        for ext in exts:
+            if path.endswith("." + ext):
+                file = OctoFile(path, self.settings)
+                for f in self.files:
+                    if f.name == file.name:
+                        return
+                self.files.append(file)
 
     def __locate_files(self):
         for (dirpath, dirnames, filenames) in os.walk(self.path):
@@ -135,7 +158,7 @@ class OctoFiles:
 
     def print(self):
         if not self.files:
-            print("No audio files were found.\n")
+            print("No song files were found.\n")
             return
 
         print("Available Song Files:")
@@ -175,10 +198,12 @@ class OctoUsb:
         return True
 
     def __list_files(self):
+        exts = ['wav', 'mid', 'avi', 'mov', 'mkv', 'mp4', 'm4v']
         for (dirpath, dirnames, filenames) in os.walk(self.mount):
             for x in filenames:
-                if x.endswith(".wav") or x.endswith(".mid"):
-                    self.files.append(os.path.join(dirpath, x))
+                for ext in exts:
+                    if x.endswith("." + ext):
+                        self.files.append(os.path.join(dirpath, x))
             break
         return True
 

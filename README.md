@@ -2,13 +2,13 @@
 
 Multi-channel midi-capable audio/midi player on the Raspberry Pi platform using Python 3.
 
-_By [D. Cooper Dalrymple](https://dcdalrymple.com/), 2021_
+_By [D. Cooper Dalrymple](https://dcdalrymple.com/), 2021 - 2023_
 
 ## What is this and what is it for?
 
-Octopy is intended to be used to play audio tracks synchronized with midi tracks when triggered by midi for the purpose of live music performances. This way, midi-controlled devices (drum machines, keyboards, etc) can be sequenced with a backing track and controlled by a simple and fitting midi device all within a small package, no laptops and fancy DAWs required.
+Octopy is intended to be used to play audio tracks synchronized with midi tracks and video output when triggered by midi for the purpose of live music performances. This way, midi-controlled devices (drum machines, keyboards, etc) can be sequenced with a backing track and controlled by a simple and fitting midi device all within a small package, no laptops and fancy DAWs required.
 
-This software could also be configured to play midi files into a midi sound device such as the MT32 or simply play back audio files for other purposes triggered from a device in another location. It is not required that both audio & midi files are provided for each track.
+This software could also be configured to play midi files into a midi sound device such as the MT32 or simply play back audio files for other purposes triggered from a device in another location. It is not required that both audio, midi, & video files are provided for each track.
 
 ## Requirements
 
@@ -30,12 +30,26 @@ This software could also be configured to play midi files into a midi sound devi
 * Python 3.x with pyalsaaudio, python-rtmidi, pyserial, wave, and mido modules
 * ALSA
 * JACK Audio Connection Kit
+* [PyGame](https://www.pygame.org/news)
+* Video Player: [OMXPlayer](https://github.com/popcornmix/omxplayer) (ARM), [FFmpeg](https://www.ffmpeg.org/) (x86), or [hello video](https://github.com/adafruit/pi_hello_video) (ARM)
 
 ## Installation
 
 ### Dependencies
 
-On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typing `sudo apt-get install libasound2-dev libjack-dev` and `pip3 install pyalsaaudio python-rtmidi pyserial wave mido` in the terminal.
+On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typing `sudo apt-get install libasound2-dev libjack-dev` and `pip3 install pyalsaaudio python-rtmidi pyserial wave mido pygame` in the terminal. At least one of the 3 aforementioned video playback handlers must also be installed if you plan on using video files.
+
+#### OMXPlayer
+
+This video playback utility will only work on Raspbian devices. Follow the instructions at the [popcornmix/omxplayer repository](https://github.com/popcornmix/omxplayer) for installation. This utility supports the following formats: `avi, mov, mkv, mp4, m4v`.
+
+#### FFmpeg
+
+FFmpeg supports a wider range of video playback formats, but is typically only compatible with x86-based systems. If using a ubuntu/debian-based system, install FFmpeg with this command: `sudo apt-get install ffmpeg`.
+
+#### hello video
+
+Raspberry Pi hello video playback utility will only work on Raspbian devices. Follow the instructions at the [adafruit/pi_hello_video repository](https://github.com/adafruit/pi_hello_video) for installation. This utility only supports the `h264` format.
 
 ### Configuration
 

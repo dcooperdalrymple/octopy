@@ -97,6 +97,19 @@ class OctoSettings:
     def set_midisong(self, value):
         self.data['midisong'] = value
 
+    def get_videoenabled(self):
+        return self.data['videoenabled']
+    def set_videoenabled(self, value):
+        self.data['videoenabled'] = value
+    def get_videobgcolor(self):
+        return self.data['videobgcolor']
+    def set_videobgcolor(self, value):
+        self.data['videobgcolor'] = value
+    def get_videobgimage(self):
+        return self.data['videobgimage']
+    def set_videobgimage(self, value):
+        self.data['videobgimage'] = value
+
     def parse_config(self, path):
         data = {}
         if not os.path.exists(path):
@@ -152,5 +165,13 @@ class OctoSettings:
                 data['midiclock'] = config['Midi'].getboolean('ClockOut')
             if 'SongOut' in config['Midi']:
                 data['midisong'] = config['Midi'].getboolean('SongOut')
+
+        if 'Video' in config:
+            if 'Enabled' in config['Video']:
+                data['videoenabled'] = config['Video'].getboolean('Enabled')
+            if 'BgColor' in config['Video']:
+                data['videobgcolor'] = config['Video']['BgColor']
+            if 'BgImage' in config['Video']:
+                data['videobgimage'] = config['Video']['BgImage']
 
         return data

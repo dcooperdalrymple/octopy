@@ -4,12 +4,13 @@ import time
 import threading
 
 class OctoManagerThread(threading.Thread):
-    def __init__(self, settings, audio, midi):
+    def __init__(self, settings, audio, midi, video):
         super(OctoManagerThread, self).__init__()
 
         self.settings = settings
         self.audio = audio
         self.midi = midi
+        self.video = video
 
         self.active = False
         self.stopped = False
@@ -39,6 +40,9 @@ class OctoManagerThread(threading.Thread):
 
         if self.midi.is_loaded() and self.settings.get_midisong():
             self.midi.send_start()
+
+        if self.video.is_loaded():
+            self.video.play()
 
         while self.active and deltatime <= duration:
             currenttime = time.time()
@@ -74,6 +78,7 @@ class OctoManagerThread(threading.Thread):
 
         self.midi.stop()
         self.audio.stop()
+        self.video.stop()
 
         self.active = False
         self.stopped = True
@@ -85,10 +90,11 @@ class OctoManagerThread(threading.Thread):
         return True
 
 class OctoManager():
-    def __init__(self, settings, audio, midi, start_callback=None, stop_callback=None):
+    def __init__(self, settings, audio, midi, video, start_callback=None, stop_callback=None):
         self.settings = settings
         self.audio = audio
         self.midi = midi
+        self.video = video
 
         self.file = False
         self.thread = False
@@ -123,6 +129,15 @@ class OctoManager():
                     print("Manager couldn't load, failed to load midi file.")
                 return False
 
+        if self.file.has_video():
+            if self.settings.get_verbose():
+                print("Loading video file: {}".format(self.file.videopath))
+            if not self.video.load(self.file.videopath):
+                self.file = False
+                if self.settings.get_verbose():
+                    print("Manager couldn't load, failed to load video file.")
+                return False
+
         return True
 
     def start(self):
@@ -131,7 +146,7 @@ class OctoManager():
                 print("Manager couldn't start, missing file or not loaded properly.")
             return False
 
-        self.thread = OctoManagerThread(self.settings, self.audio, self.midi)
+        self.thread = OctoManagerThread(self.settings, self.audio, self.midi, self.video)
         self.thread.start()
 
         if callable(self.start_callback):
@@ -156,7 +171,7 @@ class OctoManager():
         self.thread = False
 
         if self.settings.get_verbose():
-            print('Audio and midi halted.')
+            print('Audio, midi, and video halted.')
 
         if callable(self.stop_callback):
             self.stop_callback()

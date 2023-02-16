@@ -26,6 +26,8 @@ try:
     from rtmidi.midiutil import open_midioutput
     from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE)
     from mido import MidiFile
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+    import pygame
 except ImportError as err:
     print("Could not load {} module.".format(err))
     raise SystemExit
@@ -35,6 +37,7 @@ from octofiles import OctoFiles
 from octofiles import OctoUsb
 from octomidi import OctoMidi
 from octoaudio import OctoAudio
+from octovideo import OctoVideo
 from octomanager import OctoManager
 
 from getch import _Getch
@@ -150,8 +153,12 @@ if __name__ == '__main__':
     midi.set_callback(handle_midi)
     midi.open()
 
+    # Initialize Video
+    video = OctoVideo(settings)
+    video.init()
+
     # Setup Audio/Midi Manager
-    manager = OctoManager(settings, audio, midi, led_high, led_low)
+    manager = OctoManager(settings, audio, midi, video, led_high, led_low)
 
     # Turn off LED to indicate loading completion
     led_low()
@@ -183,3 +190,4 @@ if __name__ == '__main__':
         manager.stop()
         audio.close()
         midi.close()
+        video.close()
