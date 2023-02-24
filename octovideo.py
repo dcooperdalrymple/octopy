@@ -4,6 +4,7 @@ import threading
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 
+from pvplayer import PyVidPlayer
 from omxplayer import OMXPlayer
 from mpvplayer import MPVPlayer
 from ffmpegplayer import FFmpegPlayer
@@ -13,6 +14,7 @@ class OctoVideo():
     def __init__(self, settings):
         self.settings = settings
         self.player = None
+        self.clock = pygame.time.Clock()
 
         # Set parameters
         self.bgcolor = self.settings.get_videobgcolor()
@@ -29,6 +31,7 @@ class OctoVideo():
 
         # Available video players (in order of preference)
         players = [
+            PyVidPlayer,
             OMXPlayer,
             MPVPlayer,
             FFmpegPlayer,
@@ -62,10 +65,22 @@ class OctoVideo():
         self.screenrect = pygame.Rect(0, 0, pygame.display.Info().current_w, pygame.display.Info().current_h)
         self.screendepth = pygame.display.mode_ok(self.screenrect.size, self.screenargs, self.screendepth)
         self.screen = pygame.display.set_mode(self.screenrect.size, self.screenargs, self.screendepth)
-        
+
         self.bgimage = self.load_bgimage() # tuple with pyimage, xpos, ypos
         self.clear_screen()
 
+        return True
+
+    def update(self):
+        self.clock.tick(60) # Frame rate
+
+        if self.player is None:
+            return False
+
+        if not self.player.update(self.screen):
+            return False
+
+        pygame.display.update()
         return True
 
     def close(self):
@@ -128,7 +143,7 @@ class OctoVideo():
             return False
         if self.player is None:
             return False
-        self.player.load(path)
+        self.player.load(path, self.screenrect.size)
         return True
 
     def is_loaded(self):
@@ -143,4 +158,5 @@ class OctoVideo():
         if not self.player.is_playing():
             return False
         self.player.stop()
+        self.clear_screen()
         return True

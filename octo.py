@@ -127,7 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('--videoenabled', action='store_true', default=settings.get('videoenabled'), help='Enable video output. Requires pygame.')
     parser.add_argument('--videobgcolor', type=str, default=settings.get('videobgcolor'), metavar='Video Background Color', help='Use hexadecimal encoded rgb color value (ie: #000000).')
     parser.add_argument('--videobgimage', type=str, default=settings.get('videobgimage'), metavar='Video Background Image', help='Path to image to use as video background. Supports PNG, JPG, GIF, and BMP formats.')
-    parser.add_argument('--videoplayer', type=str, default=settings.get('videoplayer'), metavar='Desired Video Player', help='Select your preferred video playback handler. Available options: OMX, MPV, FFmpeg, and hello_video.')
+    parser.add_argument('--videoplayer', type=str, default=settings.get('videoplayer'), metavar='Desired Video Player', help='Select your preferred video playback handler. Available options: pyvidplayer, OMX, MPV, FFmpeg, and hello_video.')
 
     settings.set(parser.parse_args())
 
@@ -194,10 +194,9 @@ if __name__ == '__main__':
             getch = _Getch()
 
         while True:
-            if settings.get_keyboardcontrol():
-
+            if settings.get_videoenabled():
                 # Pygame focus
-                if settings.get_videoenabled():
+                if settings.get_keyboardcontrol():
                     pygame_break = False
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN and event.key in range(pygame.K_0, pygame.K_9+1) and chr(event.key).isnumeric():
@@ -208,16 +207,19 @@ if __name__ == '__main__':
                     if pygame_break:
                         break
 
-                # Console focus
-                else:
-                    ch = getch()
-                    if ch.isnumeric():
-                        handle_midi(int(ch))
-                    elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
-                        break
+                video.update()
+
+            # Console focus
+            elif settings.get_keyboardcontrol():
+                ch = getch()
+                if ch.isnumeric():
+                    handle_midi(int(ch))
+                elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
+                    break
 
             else:
                 time.sleep(1)
+
     except KeyboardInterrupt:
         if settings.get_verbose():
             print()

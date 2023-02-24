@@ -31,13 +31,28 @@ This software could also be configured to play midi files into a midi sound devi
 * ALSA
 * JACK Audio Connection Kit
 * [PyGame](https://www.pygame.org/news)
-* Video Player: [OMXPlayer](https://github.com/popcornmix/omxplayer) (ARM), [MPV](https://mpv.io/) (ARM/x86), [FFmpeg](https://www.ffmpeg.org/) (x86), or [hello video](https://github.com/adafruit/pi_hello_video) (ARM)
+* Video Player: [pyvidplayer](https://github.com/ree1261/pyvidplayer) (ARM/x86), [OMXPlayer](https://github.com/popcornmix/omxplayer) (ARM), [MPV](https://mpv.io/) (ARM/x86), [FFmpeg](https://www.ffmpeg.org/) (x86), or [hello video](https://github.com/adafruit/pi_hello_video) (ARM)
 
 ## Installation
 
 ### Dependencies
 
 On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typing `sudo apt-get install libasound2-dev libjack-dev` and `pip3 install pyalsaaudio python-rtmidi pyserial wave mido pygame` in the terminal. At least one of the 3 aforementioned video playback handlers must also be installed if you plan on using video files.
+
+#### PyVidPlayer
+
+This is the preferred video playback method (especially for headless operation) because it renders directly to the pygame output buffer. The typical installation process is as follows (from within the `octopy` directory):
+
+```
+sudo apt-get install libmediainfo-dev
+git submodules init
+git submodules update
+pip3 install -r pyvidplayer/requirements.txt
+```
+
+Notes:
+* If you have trouble installing the recommended python package versions, try directly installing the packages listed in `pyvidplayer/requirements.txt` without the specified version number.
+* It may also be necessary to create an empty `__init__.py` file within the `pyvidplayer` directory to allow the module to be loaded.
 
 #### OMXPlayer
 

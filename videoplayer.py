@@ -12,7 +12,7 @@ class VideoPlayer:
         if self.settings is not None and self.settings.get_verbose():
             print("Using {} video player.\n".format(self.__class__.__name__))
 
-    def load(self, path):
+    def load(self, path, size=None):
         if not self.exists():
             return False
         self.path = path
@@ -26,6 +26,9 @@ class VideoPlayer:
 
     def is_playing(self):
         return self.is_loaded()
+
+    def update(self, surface=None):
+        return False
 
     def stop(self, clear=True):
         # Stop the video player. timeout is how many seconds to block waiting for the player to stop before moving on.
@@ -51,9 +54,9 @@ class VideoPlayerProcess(VideoPlayer):
         self.process = None
         super().__init__(settings)
 
-    def load(self, path):
+    def load(self, path, size=None):
         self.stop(self.get_default_timeout())
-        super().load(path)
+        return super().load(path, size)
 
     def play(self):
         if not super().play():
