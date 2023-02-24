@@ -27,7 +27,7 @@ class MPVPlayer(VideoPlayerProcess):
         return 'MPV'
 
     @staticmethod
-    def get_extensions(self):
+    def get_extensions():
         return ['avi', 'mov', 'mkv', 'mp4', 'm4v']
 
     @staticmethod

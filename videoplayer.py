@@ -41,7 +41,7 @@ class VideoPlayer:
         return ''
 
     @staticmethod
-    def get_extensions(self):
+    def get_extensions():
         return []
 
     @staticmethod
