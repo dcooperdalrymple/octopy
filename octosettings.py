@@ -109,6 +109,10 @@ class OctoSettings:
         return self.data['videobgimage']
     def set_videobgimage(self, value):
         self.data['videobgimage'] = value
+    def get_videoplayer(self):
+        return self.data['videoplayer']
+    def set_videoplayer(self, value):
+        self.data['videoplayer'] = value
 
     def parse_config(self, path):
         data = {}
@@ -173,5 +177,7 @@ class OctoSettings:
                 data['videobgcolor'] = config['Video']['BgColor']
             if 'BgImage' in config['Video']:
                 data['videobgimage'] = config['Video']['BgImage']
+            if 'Player' in config['Video']:
+                data['videoplayer'] = config['Video']['Player']
 
         return data

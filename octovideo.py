@@ -12,6 +12,7 @@ from hellovideoplayer import HelloVideoPlayer
 class OctoVideo():
     def __init__(self, settings):
         self.settings = settings
+        self.player = None
 
         # Set parameters
         self.bgcolor = self.settings.get_videobgcolor()
@@ -22,15 +23,31 @@ class OctoVideo():
                 print("Video player not enabled.\n")
             return False
 
-        if OMXPlayer.exists():
-            self.player = OMXPlayer(self.settings)
-        elif MPVPlayer.exists():
-            self.player = MPVPlayer(self.settings)
-        elif FFmpegPlayer.exists():
-            self.player = FFmpegPlayer(self.settings)
-        elif HelloPlayer.exists():
-            self.player = HelloVideoPlayer(self.settings)
-        else:
+        self.player = None
+
+        # Available video players (in order of preference)
+        players = [
+            OMXPlayer,
+            MPVPlayer,
+            FFmpegPlayer,
+            HelloVideoPlayer
+        ]
+
+        # Get desired video player first if available
+        if self.settings.get_videoplayer() != '':
+            for player in players:
+                if player.get_name() == self.settings.get_videoplayer() and player.exists():
+                    self.player = player(self.settings)
+                    break
+
+        # Get first available video player
+        if self.player is None:
+            for player in players:
+                if player.exists():
+                    self.player = player(self.settings)
+                    break
+
+        if self.player is None:
             if self.settings.get_verbose():
                 print("Could not locate compatible video player.\n")
             return False
@@ -103,14 +120,16 @@ class OctoVideo():
             return False
         if not self.valid_path(path):
             return False
+        if self.player is None:
+            return False
         self.player.load(path)
         return True
 
     def is_loaded(self):
-        return self.player.is_loaded()
+        return not self.player is None and self.player.is_loaded()
 
     def play(self):
-        return self.player.play()
+        return not self.player is None and self.player.play()
 
     def stop(self):
         if self.player is None:

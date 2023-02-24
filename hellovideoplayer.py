@@ -13,6 +13,10 @@ class HelloVideoPlayer(VideoPlayerProcess):
         return args
 
     @staticmethod
+    def get_name():
+        return 'hello_video'
+
+    @staticmethod
     def get_extensions(self):
         return ['h264']
 
