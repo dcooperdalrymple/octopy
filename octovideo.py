@@ -41,7 +41,7 @@ class OctoVideo():
         # Get desired video player first if available
         if self.settings.get_videoplayer() != '':
             for player in players:
-                if player.get_name() == self.settings.get_videoplayer() and player.exists():
+                if player.get_name().lower().strip() == self.settings.get_videoplayer().lower().strip() and player.exists():
                     self.player = player(self.settings)
                     break
 
