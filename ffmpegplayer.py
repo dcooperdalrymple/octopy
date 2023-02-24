@@ -12,6 +12,7 @@ class FFmpegPlayer(VideoPlayerProcess):
         args.append('-an') # Disable audio
         args.append('-sn') # Disable subtitles
         args.append('-noborder') # Borderless window
+        args.append('-exitonkeydown')
         args.extend(['-loop', '0']) # Loop forever
         args.extend(['-loglevel', 'quiet']) # Disable verbose output
         args.append(self.path)

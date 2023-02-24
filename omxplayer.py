@@ -9,6 +9,7 @@ class OMXPlayer(VideoPlayerProcess):
     def get_arguments(self):
         args = [self.get_command()]
         args.append('--loop')
+        args.append('--no-keys')
         args.append(self.path)
         return args
 

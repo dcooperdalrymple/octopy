@@ -177,14 +177,33 @@ if __name__ == '__main__':
         else:
             print("Entering main loop. Press Control-C to exit.\n")
     try:
-        getch = _Getch()
+        getch = False
+        if settings.get_keyboardcontrol() and not settings.get_videoenabled():
+            getch = _Getch()
+
         while True:
             if settings.get_keyboardcontrol():
-                ch = getch()
-                if ch.isnumeric():
-                    handle_midi(int(ch))
-                elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
-                    break
+
+                # Pygame focus
+                if settings.get_videoenabled():
+                    pygame_break = False
+                    for event in pygame.event.get():
+                        if event.type == pygame.KEYDOWN and event.key in range(pygame.K_0, pygame.K_9+1) and chr(event.key).isnumeric():
+                            handle_midi(int(chr(event.key)))
+                        elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key in [pygame.K_q, pygame.K_ESCAPE]) or (event.type == pygame.KEYDOWN and event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL):
+                            pygame_break = True
+                            break
+                    if pygame_break:
+                        break
+
+                # Console focus
+                else:
+                    ch = getch()
+                    if ch.isnumeric():
+                        handle_midi(int(ch))
+                    elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
+                        break
+
             else:
                 time.sleep(1)
     except KeyboardInterrupt:
