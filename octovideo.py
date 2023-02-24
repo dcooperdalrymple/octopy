@@ -16,6 +16,8 @@ class OctoVideo():
 
         # Set parameters
         self.bgcolor = self.settings.get_videobgcolor()
+        self.screenargs = pygame.FULLSCREEN | pygame.NOFRAME
+        self.screendepth = 32
 
     def init(self):
         if not self.is_enabled():
@@ -55,8 +57,12 @@ class OctoVideo():
         # Initialize pygame
         pygame.display.init()
         pygame.mouse.set_visible(False)
-        self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN | pygame.NOFRAME)
-        self.size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+
+        # Initialize screen
+        self.screenrect = pygame.Rect(0, 0, pygame.display.Info().current_w, pygame.display.Info().current_h)
+        self.screendepth = pygame.display.mode_ok(self.screenrect.size, self.screenargs, self.screendepth)
+        self.screen = pygame.display.set_mode(self.screenrect.size, self.screenargs, self.screendepth)
+        
         self.bgimage = self.load_bgimage() # tuple with pyimage, xpos, ypos
         self.clear_screen()
 
@@ -86,7 +92,7 @@ class OctoVideo():
         image_x = 0
         image_y = 0
 
-        screen_w, screen_h = self.size
+        screen_w, screen_h = self.screenrect.size
         image_w, image_h = image.get_size()
 
         screen_aspect_ratio = screen_w / screen_h
