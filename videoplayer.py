@@ -10,7 +10,7 @@ class VideoPlayer:
         self.settings = settings
 
         if self.settings is not None and self.settings.get_verbose():
-            print("Using {} video player.".format(self.__class__.__name__))
+            print("Using {} video player.\n".format(self.__class__.__name__))
 
     def load(self, path):
         if not self.exists():

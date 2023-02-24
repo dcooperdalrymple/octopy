@@ -41,7 +41,7 @@ class OctoManagerThread(threading.Thread):
         if self.midi.is_loaded() and self.settings.get_midisong():
             self.midi.send_start()
 
-        if self.video.is_loaded():
+        if self.settings.get_videoenabled() and self.video.is_loaded():
             self.video.play()
 
         while self.active and deltatime <= duration:
@@ -78,7 +78,8 @@ class OctoManagerThread(threading.Thread):
 
         self.midi.stop()
         self.audio.stop()
-        self.video.stop()
+        if self.settings.get_videoenabled():
+            self.video.stop()
 
         self.active = False
         self.stopped = True
@@ -129,7 +130,7 @@ class OctoManager():
                     print("Manager couldn't load, failed to load midi file.")
                 return False
 
-        if self.file.has_video():
+        if self.file.has_video() and self.settings.get_videoenabled():
             if self.settings.get_verbose():
                 print("Loading video file: {}".format(self.file.videopath))
             if not self.video.load(self.file.videopath):

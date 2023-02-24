@@ -26,8 +26,6 @@ try:
     from rtmidi.midiutil import open_midioutput
     from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE)
     from mido import MidiFile
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-    import pygame
 except ImportError as err:
     print("Could not load {} module.".format(err))
     raise SystemExit
@@ -120,6 +118,15 @@ if __name__ == '__main__':
     parser.add_argument('--midioutchannel', type=int, default=settings.get('midioutchannel'), metavar='Midi Output Channel', help='When > 0, force a midi channel. Otherwise, use original midi message channels.')
 
     settings.set(parser.parse_args())
+
+    # Only import pygame if video output is enabled
+    if settings.get_videoenabled():
+        try:
+            os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+            import pygame
+        except ImportError as err:
+            print("Could not load {} module.".format(err))
+            raise SystemExit
 
     # Configure LED if enabled
     if not led_setup() and settings.get_statusled() > 0:

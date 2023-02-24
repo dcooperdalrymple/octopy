@@ -19,7 +19,7 @@ class OctoVideo():
     def init(self):
         if not self.is_enabled():
             if self.settings.get_verbose():
-                print("Video player not enabled.")
+                print("Video player not enabled.\n")
             return False
 
         if OMXPlayer.exists():
@@ -32,7 +32,7 @@ class OctoVideo():
             self.player = HelloVideoPlayer(self.settings)
         else:
             if self.settings.get_verbose():
-                print("Could not locate compatible video player.")
+                print("Could not locate compatible video player.\n")
             return False
 
         # Initialize pygame
