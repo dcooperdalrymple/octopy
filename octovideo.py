@@ -5,6 +5,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 
 from omxplayer import OMXPlayer
+from mpvplayer import MPVPlayer
 from ffmpegplayer import FFmpegPlayer
 from hellovideoplayer import HelloVideoPlayer
 
@@ -23,6 +24,8 @@ class OctoVideo():
 
         if OMXPlayer.exists():
             self.player = OMXPlayer(self.settings)
+        elif MPVPlayer.exists():
+            self.player = MPVPlayer(self.settings)
         elif FFmpegPlayer.exists():
             self.player = FFmpegPlayer(self.settings)
         elif HelloPlayer.exists():

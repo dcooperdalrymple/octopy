@@ -31,7 +31,7 @@ This software could also be configured to play midi files into a midi sound devi
 * ALSA
 * JACK Audio Connection Kit
 * [PyGame](https://www.pygame.org/news)
-* Video Player: [OMXPlayer](https://github.com/popcornmix/omxplayer) (ARM), [FFmpeg](https://www.ffmpeg.org/) (x86), or [hello video](https://github.com/adafruit/pi_hello_video) (ARM)
+* Video Player: [OMXPlayer](https://github.com/popcornmix/omxplayer) (ARM), [MPV](https://mpv.io/) (ARM/x86), [FFmpeg](https://www.ffmpeg.org/) (x86), or [hello video](https://github.com/adafruit/pi_hello_video) (ARM)
 
 ## Installation
 
@@ -42,6 +42,10 @@ On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typin
 #### OMXPlayer
 
 This video playback utility will only work on Raspbian devices. Follow the instructions at the [popcornmix/omxplayer repository](https://github.com/popcornmix/omxplayer) for installation. This utility supports the following formats: `avi, mov, mkv, mp4, m4v`.
+
+#### MPV
+
+MPV is supported on both Raspbian and x86 systems (Linux, Windows, & Mac). Follow the instructions on the [MPV website](https://mpv.io/installation/) for installation. On Linux and Raspbian systems, it should be as simple as running: `sudo apt-get install mpv`.
 
 #### FFmpeg
 
