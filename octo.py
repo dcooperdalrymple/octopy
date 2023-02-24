@@ -107,15 +107,24 @@ if __name__ == '__main__':
     settings = OctoSettings()
 
     parser = argparse.ArgumentParser(description="Octopy")
+
     parser.add_argument('--verbose', action='store_true', default=settings.get('verbose'))
+
     parser.add_argument('--audiodevice', type=str, default=settings.get('audiodevice'), metavar='Audio Device Index')
     parser.add_argument('--buffersize', type=int, default=settings.get('buffersize'), metavar='Buffer Size')
+
     parser.add_argument('--localmedia', type=str, default=settings.get('localmedia'), metavar='Relative Media Directory')
     parser.add_argument('--storagemedia', type=str, default=settings.get('storagemedia'), metavar='External Storage Media Directory')
+
     parser.add_argument('--midiindevice', type=str, default=settings.get('midiindevice'), metavar='Midi Input Device')
     parser.add_argument('--midiinchannel', type=int, default=settings.get('midiinchannel'), metavar='Midi Input Channel Filter', help='Used for selecting song playback')
     parser.add_argument('--midioutdevice', type=str, default=settings.get('midioutdevice'), metavar='Midi Output Device')
     parser.add_argument('--midioutchannel', type=int, default=settings.get('midioutchannel'), metavar='Midi Output Channel', help='When > 0, force a midi channel. Otherwise, use original midi message channels.')
+
+    parser.add_argument('--videoenabled', action='store_true', default=settings.get('videoenabled'))
+    parser.add_argument('--videobgcolor', type=str, default=settings.get('videobgcolor'), metavar='Video Background Color', help='Use hexadecimal encoded rgb color value (ie: #000000).')
+    parser.add_argument('--videobgimage', type=str, default=settings.get('videobgimage'), metavar='Video Background Image', help='Path to image to use as video background. Supports PNG, JPG, GIF, and BMP formats.')
+    parser.add_argument('--videoplayer', type=str, default=settings.get('videoplayer'), metavar='Desired Video Player', help='Select your preferred video playback handler. Available options: OMX, MPV, FFmpeg, and hello_video.')
 
     settings.set(parser.parse_args())
 
