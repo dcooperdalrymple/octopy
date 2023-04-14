@@ -44,7 +44,7 @@ On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typin
 This is the preferred video playback method (especially for headless operation) because it renders directly to the pygame output buffer. The typical installation process is as follows (from within the `octopy` directory):
 
 ```
-sudo apt-get install libmediainfo-dev
+sudo apt-get install libmediainfo-dev libavcodec-dev libavfilter-dev libavdevice-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpostproc-dev ffmpeg
 git submodules init
 git submodules update
 pip3 install -r pyvidplayer/requirements.txt
