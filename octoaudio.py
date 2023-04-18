@@ -36,20 +36,34 @@ class OctoAudio():
         print("Desired Audio Device: {}\n".format(self.devicename))
 
     def __setup_device(self, channels, framerate, format):
+        # pyalsaaudio 0.9-0.10
         try:
             device = alsaaudio.PCM(
                 type=alsaaudio.PCM_PLAYBACK,
                 mode=alsaaudio.PCM_NONBLOCK,
-                device=self.devicename,
-                periodsize=self.periodsize,
-                channels=channels,
                 rate=framerate,
-                format=format
+                channels=channels,
+                format=format,
+                periodsize=self.periodsize,
+                device=self.devicename
             )
-        except (alsaaudio.ALSAAudioError):
-            if self.settings.get_verbose():
-                print("Unable to initialize sound card.")
-            return False
+        except Exception as e:
+            # pyalsaaudio 0.8
+            try:
+                device = alsaaudio.PCM(
+                    type=alsaaudio.PCM_PLAYBACK,
+                    mode=alsaaudio.PCM_NONBLOCK,
+                    device=self.devicename
+                )
+                device.setchannels(channels)
+                device.setrate(framerate)
+                device.setformat(format)
+                device.setperiodsize(self.periodsize)
+            except Exception as ee:
+                if self.settings.get_verbose():
+                    print("Unable to initialize sound card.")
+                    print(repr(ee))
+                return False
 
         if self.settings.get_verbose():
             print("Selected Sound Card: {}\n".format(device.cardname()))
