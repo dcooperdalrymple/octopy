@@ -100,7 +100,10 @@ class OctoMidi():
 
                 self.midiin.open_port(port_index)
                 self.in_port = in_ports[port_index]
-            except (EOFError, KeyboardInterrupt, rtmidi._rtmidi.InvalidPortError, TypeError):
+            except (EOFError, KeyboardInterrupt, rtmidi._rtmidi.InvalidPortError, TypeError) as e:
+                if self.settings.get_verbose():
+                    print("Could not open desired midi input port.")
+                    print(repr(e))
                 self.midiin = rtmidi.MidiIn().open_virtual_port("Octopy Virtual Input")
                 self.in_port = "Octopy Virtual Input"
         if self.settings.get_verbose():
@@ -126,7 +129,10 @@ class OctoMidi():
 
                 self.midiout.open_port(port_index)
                 self.out_port = out_ports[port_index]
-            except (EOFError, KeyboardInterrupt, rtmidi._rtmidi.InvalidPortError, TypeError):
+            except (EOFError, KeyboardInterrupt, rtmidi._rtmidi.InvalidPortError, TypeError) as e:
+                if self.settings.get_verbose():
+                    print("Could not open desired midi output port.")
+                    print(repr(e))
                 self.midiout.open_virtual_port("Octopy Virtual Output")
                 self.out_port = "Octopy Virtual Output"
         if self.settings.get_verbose():
@@ -244,6 +250,7 @@ class OctoMidi():
             except Exception:
                 if self.settings.get_verbose():
                     print('Unable to open midi file: {}.'.format(self.midifilepath))
+                    print(repr(e))
                 self.midifilepath = False
                 self.midifile = False
                 self.midimsgs = False

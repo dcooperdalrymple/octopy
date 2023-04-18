@@ -75,9 +75,10 @@ class OctoFile:
             filepath = os.path.abspath(self.wavepath)
             try:
                 self.wavefile = wave.open(filepath, 'rb')
-            except Exception:
+            except Exception as e:
                 if self.settings and self.settings.get_verbose():
                     print('Unable to open wave file: {}.'.format(filepath))
+                    print(repr(e))
                 self.wavefile = False
                 return False
 
@@ -85,9 +86,10 @@ class OctoFile:
             filepath = os.path.abspath(self.midipath)
             try:
                 self.midifile = MidiFile(filepath)
-            except Exception:
+            except Exception as e:
                 if self.settings and self.settings.get_verbose():
                     print('Unable to open midi file: {}.'.format(filepath))
+                    print(repr(e))
                 self.midifile = False
                 self.midimsgs = False
                 return False

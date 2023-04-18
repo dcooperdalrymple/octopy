@@ -84,9 +84,10 @@ class OctoAudio():
         if not self.wav:
             try:
                 self.wav = wave.open(self.filepath, 'rb')
-            except Exception:
+            except Exception as e:
                 if self.settings.get_verbose():
                     print('Unable to open wave file: {}.'.format(self.filepath))
+                    print(repr(e))
                 self.filepath = False
                 self.wav = False
                 return False
@@ -113,13 +114,8 @@ class OctoAudio():
             print("  Format = {}".format(format))
             print("  Buffer Size = {}".format(self.periodsize))
 
-        try:
-            self.device = self.__setup_device(self.wav.getnchannels(), self.wav.getframerate(), format)
-        except Exception:
-            self.device = False
+        self.device = self.__setup_device(self.wav.getnchannels(), self.wav.getframerate(), format)
         if not self.device:
-            if self.settings.get_verbose():
-                print("Unable to initialize audio device.")
             self.wav = False
             self.device = False
             return False

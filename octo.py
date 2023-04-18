@@ -67,6 +67,7 @@ def led_setup(pin=False):
     try:
         import RPi.GPIO
     except ImportError as err:
+        print("Could not load {} module.".format(err))
         return False
 
     RPi.GPIO.setmode(RPi.GPIO.BCM)
