@@ -35,11 +35,34 @@ This software could also be configured to play midi files into a midi sound devi
 
 ## Installation
 
-### Dependencies
+### Easy Method
+
+Installing Octopy on Raspbian can be completed easily using the provided install script which can be run remotely. Use the following command on a clean install of Raspbian OS Lite to configure Octopy and all necessary dependencies. This script can also be used to update a pre-existing install.
+
+```
+wget -O - https://raw.githubusercontent.com/dcooperdalrymple/octopy/master/install.sh | bash
+```
+
+#### Post Installation
+
+After installation is completed, you will need to perform some additional configuration steps to ensure that Octopy is fit for your system.
+
+* Edit the configuration settings within `/root/octopy.ini` as needed.
+* Run `sudo python3 ~/octopy/octo.py --verbose` to test your system before deployment and scan available alsa devices.
+* If you're using a separate hardware audio driver such as the audio hats provided by HiFiBerry, make sure to follow the instructions provided by the manufacturer to make them ALSA-compatible.
+* Use `sudo raspi-config` to adjust various parameters of your Raspberry Pi device:
+  * If using GPIO serial for MIDI input/output, you may need to enable "Serial Port" under "Interface Options". Do not enable login shell over serial.
+  * If you would like to start octopy after boot automatically, enable auto-login to console.
+  * If you would like to make your boot media read-only to avoid potential memory corruption when powering off, enable "Overlay File System". Only do this after configuration is completed and you've ensured that every aspect of your system is running as desired.
+
+
+### Manual Method
+
+#### Dependencies
 
 On Ubuntu/Debian/Raspbian systems, ensure that all dependencies are met by typing `sudo apt-get install libasound2-dev libjack-dev` and `pip3 install pyalsaaudio python-rtmidi pyserial wave mido pygame` in the terminal. At least one of the 3 aforementioned video playback handlers must also be installed if you plan on using video files.
 
-#### PyVidPlayer
+##### PyVidPlayer
 
 This is the preferred video playback method (especially for headless operation) because it renders directly to the pygame output buffer. The typical installation process is as follows (from within the `octopy` directory):
 
@@ -54,19 +77,19 @@ Notes:
 * If you have trouble installing the recommended python package versions, try directly installing the packages listed in `pyvidplayer/requirements.txt` without the specified version number.
 * It may also be necessary to create an empty `__init__.py` file within the `pyvidplayer` directory to allow the module to be loaded.
 
-#### OMXPlayer
+##### OMXPlayer
 
 This video playback utility will only work on Raspbian devices. Follow the instructions at the [popcornmix/omxplayer repository](https://github.com/popcornmix/omxplayer) for installation. This utility supports the following formats: `avi, mov, mkv, mp4, m4v`.
 
-#### MPV
+##### MPV
 
 MPV is supported on both Raspbian and x86 systems (Linux, Windows, & Mac). Follow the instructions on the [MPV website](https://mpv.io/installation/) for installation. On Linux and Raspbian systems, it should be as simple as running: `sudo apt-get install mpv`.
 
-#### FFmpeg
+##### FFmpeg
 
 FFmpeg supports a wider range of video playback formats, but is typically only compatible with x86-based systems. If using a ubuntu/debian-based system, install FFmpeg with this command: `sudo apt-get install ffmpeg`.
 
-#### hello video
+##### hello video
 
 Raspberry Pi hello video playback utility will only work on Raspbian devices. Follow the instructions at the [adafruit/pi_hello_video repository](https://github.com/adafruit/pi_hello_video) for installation. This utility only supports the `h264` format.
 
