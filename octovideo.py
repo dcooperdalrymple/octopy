@@ -104,6 +104,11 @@ class OctoVideo():
 
     def is_enabled(self):
         return self.settings.get_videoenabled()
+    
+    def sanitize_path(self, path):
+        if not path or path == "":
+            return ""
+        return os.path.abspath(os.path.expanduser(path))
 
     def valid_path(self, path):
         if not path or path == "" or not os.path.isfile(path):
@@ -114,6 +119,7 @@ class OctoVideo():
         path = self.settings.get_videobgimage()
         if self.settings.get_verbose():
             print("Loading video background image: {}".format(path))
+        path = self.sanitize_path(path)
         if not self.valid_path(path):
             if self.settings.get_verbose():
                 print("Unable to load video background image.")
