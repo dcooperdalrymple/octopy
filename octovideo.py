@@ -79,7 +79,7 @@ class OctoVideo():
         self.screen = pygame.display.set_mode(self.screenrect.size, self.screenargs, self.screendepth)
 
         self.bgimage = self.load_bgimage() # tuple with pyimage, xpos, ypos
-        self.clear_screen()
+        self.clear_screen(True)
 
         return True
 
@@ -155,11 +155,12 @@ class OctoVideo():
 
         return (image, image_x, image_y)
 
-    def clear_screen(self):
+    def clear_screen(self, force=False):
         self.screen.fill(self.bgcolor)
         if self.bgimage != False and self.bgimage[0] is not None:
             self.screen.blit(self.bgimage[0], (self.bgimage[1], self.bgimage[2]))
-        pygame.display.flip()
+        if force:
+            pygame.display.flip()
 
     def load(self, path):
         if not self.is_enabled():
