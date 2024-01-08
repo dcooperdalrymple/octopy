@@ -139,6 +139,9 @@ class OctoManager():
                 if self.settings.get_verbose():
                     print("Manager couldn't load, failed to load video file.")
                 return False
+            
+        if self.settings.get_verbose():
+            print("Loading complete!")
 
         return True
 

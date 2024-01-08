@@ -38,8 +38,18 @@ class OctoVideo():
             HelloVideoPlayer
         ]
 
+        # List available video players
+        if self.settings.get_verbose():
+            print("Available Video Players:")
+            i = 0
+            for player in players:
+                if player.exists():
+                    i += 1
+                    print("  {:d}: {}".format(i, player.get_name()))
+
         # Get desired video player first if available
         if self.settings.get_videoplayer() != '':
+            print("Desired Video Player: {}".format(self.settings.get_videoplayer()))
             for player in players:
                 if player.get_name().lower().strip() == self.settings.get_videoplayer().lower().strip() and player.exists():
                     self.player = player(self.settings)
@@ -56,6 +66,8 @@ class OctoVideo():
             if self.settings.get_verbose():
                 print("Could not locate compatible video player.\n")
             return False
+        else:
+            print("Selected Video Player: {}".format(self.player.get_name()))
 
         # Initialize pygame
         pygame.display.init()
@@ -100,7 +112,11 @@ class OctoVideo():
 
     def load_bgimage(self):
         path = self.settings.get_videobgimage()
+        if self.settings.get_verbose():
+            print("Loading video background image: {}".format(path))
         if not self.valid_path(path):
+            if self.settings.get_verbose():
+                print("Unable to load video background image.")
             return False
 
         image = pygame.image.load(path)
@@ -127,6 +143,9 @@ class OctoVideo():
 
         else: # Same aspect ratio
             image = pygame.transform.scale(image, (screen_w, screen_h))
+
+        if self.settings.get_verbose():
+            print("Successfully loaded video background image!")
 
         return (image, image_x, image_y)
 
