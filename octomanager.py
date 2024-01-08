@@ -28,7 +28,11 @@ class OctoManagerThread(threading.Thread):
             total_buffers = 0
         current_buffer = 0
 
-        # Preload buffer
+        # Preload video
+        if self.settings.get_videoenabled() and self.video.is_loaded():
+            self.video.play()
+
+        # Preload audio buffer
         if self.audio.is_loaded() and self.settings.get_bufferpreload() > 0:
             for i in range(self.settings.get_bufferpreload()):
                 self.audio.write_buffer()
@@ -40,9 +44,6 @@ class OctoManagerThread(threading.Thread):
 
         if self.midi.is_loaded() and self.settings.get_midisong():
             self.midi.send_start()
-
-        if self.settings.get_videoenabled() and self.video.is_loaded():
-            self.video.play()
 
         while self.active and deltatime <= duration:
             currenttime = time.time()

@@ -34,14 +34,13 @@ cd ~/octopy
 git submodule init
 git submodule update
 
-echo -n "Would you like to install pyvidplayer? (recommended) [y/N] "
+echo -n "Would you like to install pyvidplayer2? (recommended) [y/N] "
 read
 if [[ "$REPLY" =~ (yes|y|Y)$ ]]; then
-    echo "Installing pyvidplayer dependencies..."
-    cd ~/octopy
+    echo "Installing pyvidplayer2..."
     sudo apt-get install libmediainfo-dev libavcodec-dev libavfilter-dev libavdevice-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpostproc-dev ffmpeg
-    pip3 install -r pyvidplayer/requirements.txt
-    echo "" > pyvidplayer/__init__.py
+    sudo apt-get install portaudio19-dev python3-pyaudio
+    sudo pip3 install pyvidplayer2
 fi
 
 echo -n "Would you like to install MPV? [y/N] "

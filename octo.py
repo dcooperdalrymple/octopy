@@ -128,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('--videoenabled', action='store_true', default=settings.get('videoenabled'), help='Enable video output. Requires pygame.')
     parser.add_argument('--videobgcolor', type=str, default=settings.get('videobgcolor'), metavar='Video Background Color', help='Use hexadecimal encoded rgb color value (ie: #000000).')
     parser.add_argument('--videobgimage', type=str, default=settings.get('videobgimage'), metavar='Video Background Image', help='Path to image to use as video background. Supports PNG, JPG, GIF, and BMP formats.')
-    parser.add_argument('--videoplayer', type=str, default=settings.get('videoplayer'), metavar='Desired Video Player', help='Select your preferred video playback handler. Available options: pyvidplayer, OMX, MPV, FFmpeg, and hello_video.')
+    parser.add_argument('--videoplayer', type=str, default=settings.get('videoplayer'), metavar='Desired Video Player', help='Select your preferred video playback handler. Available options: pyvidplayer2, OMX, MPV, FFmpeg, and hello_video.')
 
     settings.set(parser.parse_args())
 

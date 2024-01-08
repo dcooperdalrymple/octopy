@@ -1,7 +1,8 @@
 import os
+import time
 from videoplayer import VideoPlayer
 
-class PyVidPlayer(VideoPlayer):
+class PyVidPlayer2(VideoPlayer):
 
     def __init__(self, settings = None):
         self.vid = None
@@ -12,16 +13,18 @@ class PyVidPlayer(VideoPlayer):
             return False
 
         try:
-            from pyvidplayer.pyvidplayer import Video
+            from pyvidplayer2 import Video
         except ImportError as err:
             print("Could not load {} module.".format(err))
             raise SystemExit
 
         self.stop(False)
-        self.vid = Video(self.path)
+        self.vid = Video(self.path, use_pygame_audio=True)
+        self.vid.resize(size)
+        self.vid.play()
         self.vid.pause()
         self.vid.set_volume(0.0)
-        self.vid.set_size(size)
+        self.vid.mute()
 
         return True
 
@@ -34,7 +37,7 @@ class PyVidPlayer(VideoPlayer):
 
         self.vid.restart()
         self.vid.resume()
-        return
+        return True
 
     def update(self, surface=None):
         if not self.is_loaded():
@@ -42,14 +45,10 @@ class PyVidPlayer(VideoPlayer):
 
         if surface is None:
             return False
-
+        
         if self.vid.get_paused():
             return False
-
-        # Enable endless looping
-        if not self.vid.active:
-            self.vid.restart()
-
+        
         self.vid.draw(surface, (0, 0), force_draw=False)
         return True
 
@@ -70,7 +69,7 @@ class PyVidPlayer(VideoPlayer):
 
     @staticmethod
     def get_name():
-        return 'pyvidplayer'
+        return 'pyvidplayer2'
 
     @staticmethod
     def get_extensions():
@@ -79,7 +78,7 @@ class PyVidPlayer(VideoPlayer):
     @staticmethod
     def exists():
         try:
-            from pyvidplayer.pyvidplayer import Video
+            from pyvidplayer2 import Video
         except ImportError as err:
             return False
         return True

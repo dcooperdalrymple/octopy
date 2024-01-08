@@ -4,7 +4,7 @@ import threading
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 
-from pvplayer import PyVidPlayer
+from pvplayer2 import PyVidPlayer2
 from omxplayer import OMXPlayer
 from mpvplayer import MPVPlayer
 from ffmpegplayer import FFmpegPlayer
@@ -31,7 +31,7 @@ class OctoVideo():
 
         # Available video players (in order of preference)
         players = [
-            PyVidPlayer,
+            PyVidPlayer2,
             OMXPlayer,
             MPVPlayer,
             FFmpegPlayer,
