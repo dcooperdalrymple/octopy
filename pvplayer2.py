@@ -48,6 +48,10 @@ class PyVidPlayer2(VideoPlayer):
         
         if self.vid.get_paused():
             return False
+
+        # Enable endless looping
+        if not self.vid.active:
+            self.vid.restart()
         
         self.vid.draw(surface, (0, 0), force_draw=False)
         return True
