@@ -4,13 +4,15 @@ import time
 import threading
 
 class OctoManagerThread(threading.Thread):
-    def __init__(self, settings, audio, midi, video):
+    def __init__(self, settings, audio, midi, video, start_callback=None, stop_callback=None):
         super(OctoManagerThread, self).__init__()
 
         self.settings = settings
         self.audio = audio
         self.midi = midi
         self.video = video
+        self.start_callback = start_callback
+        self.stop_callback = stop_callback
 
         self.active = False
         self.stopped = False
@@ -27,6 +29,9 @@ class OctoManagerThread(threading.Thread):
         else:
             total_buffers = 0
         current_buffer = 0
+
+        if callable(self.start_callback):
+            self.start_callback()
 
         # Preload video
         if self.settings.get_videoenabled() and self.video.is_loaded():
@@ -84,6 +89,9 @@ class OctoManagerThread(threading.Thread):
 
         self.active = False
         self.stopped = True
+
+        if callable(self.stop_callback):
+            self.stop_callback()
 
     def stop(self):
         if not self.active:
@@ -151,11 +159,8 @@ class OctoManager():
                 print("Manager couldn't start, missing file or not loaded properly.")
             return False
 
-        self.thread = OctoManagerThread(self.settings, self.audio, self.midi, self.video)
+        self.thread = OctoManagerThread(self.settings, self.audio, self.midi, self.video, self.start_callback, self.stop_callback)
         self.thread.start()
-
-        if callable(self.start_callback):
-            self.start_callback()
 
         return True
 
@@ -177,8 +182,5 @@ class OctoManager():
 
         if self.settings.get_verbose():
             print('Audio, midi, and video halted.')
-
-        if callable(self.stop_callback):
-            self.stop_callback()
 
         return True
