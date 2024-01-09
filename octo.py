@@ -103,6 +103,16 @@ def led_low(pin=False):
     RPi.GPIO.output(pin, RPi.GPIO.LOW)
     return True
 
+def manager_start():
+    led_high()
+    if settings.get_verbose():
+        print("Song playback started.")
+
+def manager_stop():
+    led_low()
+    if settings.get_verbose():
+        print("Song playback stopped.")
+
 if __name__ == '__main__':
 
     settings = OctoSettings()
@@ -178,7 +188,7 @@ if __name__ == '__main__':
     video.init()
 
     # Setup Audio/Midi Manager
-    manager = OctoManager(settings, audio, midi, video, led_high, led_low)
+    manager = OctoManager(settings, audio, midi, video, manager_start, manager_stop)
 
     # Turn off LED to indicate loading completion
     led_low()
